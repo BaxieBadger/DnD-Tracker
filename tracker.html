@@ -343,8 +343,8 @@ html{font-size:18px}
   </div>
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:20px;padding:20px">
     <div id="pv-idle" style="text-align:center">
-      <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(24px,5vw,36px);color:var(--gold-d)">⚔ Venter på GM…</div>
-      <div style="font-size:clamp(16px,2.5vw,22px);color:var(--text-d);margin-top:10px;font-style:italic">Kampen er ikke begyndt endnu.</div>
+      <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(24px,5vw,36px);color:var(--gold-d)">Rul for initiativ…</div>
+      <div style="font-size:clamp(16px,2.5vw,22px);color:var(--text-d);margin-top:10px;font-style:italic">Døden står for døren!</div>
     </div>
     <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;gap:16px;width:100%">
       <div id="pv-round" class="pv-round">— Runde 1 —</div>
@@ -739,9 +739,11 @@ function renderPlayer(){
     const cur=i===combat.currentIndex;
     const dead=x.dead||x.dst?.dead;
     const dying=x.hp===0&&x.type==="player"&&x.dst&&!x.dst.stable&&!x.dst.dead;
-    const badge=dead?` <span style="color:#8b1a1a;font-size:12px">☠</span>`:dying?` <span style="color:#c0392b;font-size:12px">☠ DST</span>`:"";
-    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}${dead||dying?";opacity:.35":""}">
-      <div class="pv-order-num" style="color:${pal.d}">${x.initiative}</div>
+    const badge=dead?` <span style="color:#8b1a1a;font-size:12px">☠</span>`:dying?` <span style="color:#c0392b;font-size:12px">☠</span>`:"";
+    // Spillere: vis initiativrul. Monstre/NPC: vis kun position (1., 2., 3.)
+    const numLabel=x.type==="player"?x.initiative:`${i+1}.`;
+    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}${dead||dying?";opacity:.3":""}">
+      <div class="pv-order-num" style="color:${pal.d}">${numLabel}</div>
       <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${badge}</div>
       ${cur?`<span style="color:${pal.a};font-size:14px">◀</span>`:""}
     </div>`;
@@ -909,7 +911,6 @@ function addManual(){
   const name=document.getElementById("f-name").value.trim();
   const init=parseInt(document.getElementById("f-init").value);
   const type=document.getElementById("f-type").value;
-  const hp=parseInt(document.getElementById("f-hp").value)||null;
   const ac=parseInt(document.getElementById("f-ac").value)||null;
   const count=Math.max(1,Math.min(20,parseInt(document.getElementById("f-count").value)||1));
   if(!name||isNaN(init))return;
@@ -917,13 +918,14 @@ function addManual(){
   const baseActions=(sel&&sel.name===name&&type==="monster")
     ?sel.actions.map(a=>({...a,used:false}))
     :(AP[type]||AP.monster).map(a=>({...a,used:false}));
+  // Use HP from form field, or from selected monster if form is empty
+  const formHp=parseInt(document.getElementById("f-hp").value);
+  const hp=!isNaN(formHp)&&formHp>0?formHp:(sel?.hp||null);
   if(sel&&sel.name===name)se._sel=null;
   if(!combat.combatants)combat.combatants=[];
   for(let i=0;i<count;i++){
     const label=count>1?`${name} ${i+1}`:name;
-    // Slightly vary initiative for groups (same roll, small offset keeps order readable)
-    const initVal=count>1?init-i:init;
-    combat.combatants.push({id:uid(),name:label,initiative:initVal,type,hp,maxHp:hp,ac,actions:baseActions.map(a=>({...a}))});
+    combat.combatants.push({id:uid(),name:label,initiative:init,type,hp,maxHp:hp,ac,actions:baseActions.map(a=>({...a}))});
   }
   combat.combatants.sort((a,b)=>b.initiative-a.initiative);
   ["f-name","f-init","f-hp","f-ac"].forEach(id=>document.getElementById(id).value="");
