@@ -39,12 +39,12 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
 .btn-ghost:hover{border-color:var(--gold);color:var(--text)}
 .btn-sm{padding:5px 10px;font-size:9px}.btn-xs{padding:3px 7px;font-size:9px}
 .btn:disabled{opacity:.35;cursor:not-allowed;transform:none !important}
-.panel-title{font-family:'Cinzel Decorative',serif;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--gold-d);padding-bottom:6px;margin-bottom:10px}
-.section-divider{display:flex;align-items:center;gap:10px;color:var(--gold-d);font-size:11px;margin:4px 0}
+.panel-title{font-family:'Cinzel Decorative',serif;font-size:clamp(10px,1.2vw,14px);letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--gold-d);padding-bottom:6px;margin-bottom:10px}
+.section-divider{display:flex;align-items:center;gap:10px;color:var(--gold-d);font-size:clamp(11px,1.2vw,14px);margin:4px 0}
 .section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--gold-d);opacity:.35}
 .field{display:flex;flex-direction:column;gap:3px}
-.field label{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-d)}
-.field input,.field select,.field textarea{background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:7px 9px;border-radius:3px;font-family:'IM Fell English',serif;font-size:13px;outline:none;width:100%;transition:border-color .2s}
+.field label{font-family:'Cinzel',serif;font-size:clamp(9px,1vw,11px);letter-spacing:2px;text-transform:uppercase;color:var(--text-d)}
+.field input,.field select,.field textarea{background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:7px 9px;border-radius:3px;font-family:'IM Fell English',serif;font-size:clamp(13px,1.4vw,16px);outline:none;width:100%;transition:border-color .2s}
 .field input:focus,.field select:focus{border-color:var(--gold)}.field select option{background:var(--ink)}
 .form-row{display:flex;gap:8px}
 #gm-view{display:grid;grid-template-columns:300px 1fr 280px;min-height:calc(100vh - 45px)}
@@ -140,26 +140,32 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
 #player-view.pal-npc{background:linear-gradient(160deg,var(--np-bg1),var(--np-bg2))}
 #player-view.pal-idle{background:var(--ink)}
 .pv-round{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;text-transform:uppercase}
-.pv-card{width:100%;max-width:520px;border:2px solid;border-radius:8px;padding:48px 40px;text-align:center;position:relative;transition:all .5s}
+html{font-size:16px}
+@media(min-width:768px){html{font-size:20px}}
+.pv-card{width:100%;max-width:520px;border:2px solid;border-radius:8px;padding:clamp(24px,5vw,48px) clamp(20px,5vw,40px);text-align:center;position:relative;transition:all .5s}
 .pv-card::after{content:'';position:absolute;inset:6px;border:1px solid rgba(255,255,255,.08);border-radius:4px;pointer-events:none}
 .pv-card.pal-player{border-color:var(--pl-border);background:rgba(10,22,40,.7);box-shadow:0 0 60px rgba(74,144,217,.15)}
 .pv-card.pal-monster{border-color:var(--mo-border);background:rgba(24,8,8,.7);box-shadow:0 0 60px rgba(139,58,26,.2)}
 .pv-card.pal-npc{border-color:var(--np-border);background:rgba(8,24,8,.7);box-shadow:0 0 60px rgba(42,106,42,.2)}
-.pv-whose-turn{font-family:'Cinzel',serif;font-size:9px;letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
-.pv-name{font-family:'Cinzel Decorative',serif;font-size:52px;line-height:1.1;margin-bottom:8px;transition:color .5s,text-shadow .5s}
-.pv-sub{font-size:16px;font-style:italic}
-.pv-timer{font-family:'Cinzel Decorative',serif;font-size:40px;letter-spacing:4px}
-.pv-timer-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-top:2px}
+.pv-whose-turn{font-family:'Cinzel',serif;font-size:clamp(9px,1.5vw,14px);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
+.pv-name{font-family:'Cinzel Decorative',serif;font-size:clamp(36px,8vw,72px);line-height:1.1;margin-bottom:8px;transition:color .5s,text-shadow .5s}
+.pv-sub{font-size:clamp(14px,2.5vw,22px);font-style:italic}
+.pv-timer{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);letter-spacing:4px}
+.pv-timer-label{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,13px);letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-top:2px}
 .pv-order{width:100%;max-width:520px;display:flex;flex-direction:column;gap:4px}
-.pv-order-title{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;text-align:center}
-.pv-order-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid transparent;border-radius:3px;opacity:.45;transition:all .3s}
+.pv-order-title{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,13px);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;text-align:center}
+.pv-order-item{display:flex;align-items:center;gap:10px;padding:clamp(6px,1.5vw,10px) clamp(10px,2vw,14px);border:1px solid transparent;border-radius:3px;opacity:.45;transition:all .3s}
 .pv-order-item.current{opacity:1}
-.pv-order-num{font-family:'Cinzel Decorative',serif;font-size:13px;min-width:20px}
-.pv-order-name{font-size:13px;flex:1}
+.pv-order-num{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,2vw,18px);min-width:24px}
+.pv-order-name{font-size:clamp(13px,2vw,18px);flex:1}
 #spell-toast{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#1a0808,#2a1010);border:2px solid var(--gold-d);border-radius:6px;padding:14px 18px;max-width:280px;z-index:600;display:none;box-shadow:0 8px 32px rgba(0,0,0,.6)}
 .toast-title{font-family:'Cinzel Decorative',serif;font-size:12px;color:var(--gold);margin-bottom:4px}
 .toast-body{font-size:13px;color:var(--text);font-style:italic}
 .toast-close{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text-d);cursor:pointer;font-size:14px}
+/* Player fullscreen */
+#player-view.fullscreen-mode{position:fixed;inset:0;z-index:400;overflow-y:auto}
+#pv-fullscreen-btn{position:fixed;bottom:16px;right:16px;z-index:450;background:rgba(0,0,0,.6);border:1px solid var(--gold-d);color:var(--gold-d);font-size:20px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center}
+#pv-fullscreen-btn.visible{display:flex}
 </style>
 </head>
 <body>
@@ -201,6 +207,7 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
           <div class="field"><label>Type</label><select id="f-type"><option value="player">Spiller</option><option value="monster" selected>Monster</option><option value="npc">NPC</option></select></div>
           <div class="field"><label>Max HP</label><input id="f-hp" type="number" placeholder="30"/></div>
           <div class="field"><label>AC</label><input id="f-ac" type="number" placeholder="14"/></div>
+          <div class="field"><label>Antal</label><input id="f-count" type="number" placeholder="1" min="1" max="20" value="1"/></div>
         </div>
         <div id="f-saves-display" style="display:none;font-family:'Cinzel',serif;font-size:9px;color:var(--text-d);letter-spacing:1px;padding:4px 0"></div>
         <button class="btn btn-gold btn-sm" onclick="addManual()" style="width:100%">+ Tilføj</button>
@@ -262,6 +269,7 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
 </div>
 
 <div id="player-view" class="pal-idle">
+  <button id="pv-fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
   <!-- Skull background -->
   <div id="pv-skull" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.5s">
     <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="width:min(70vw,400px);height:auto;filter:drop-shadow(0 0 40px rgba(139,26,26,.6))">
@@ -570,6 +578,7 @@ function setView(v){
   document.getElementById("gm-view").style.display=v==="gm"?"grid":"none";
   document.getElementById("player-view").style.display=v==="player"?"flex":"none";
   document.querySelectorAll(".view-btn").forEach((b,i)=>b.classList.toggle("active",(i===0&&v==="gm")||(i===1&&v==="player")));
+  updateFullscreenBtn();
   render();
 }
 
@@ -777,15 +786,23 @@ function addManual(){
   const type=document.getElementById("f-type").value;
   const hp=parseInt(document.getElementById("f-hp").value)||null;
   const ac=parseInt(document.getElementById("f-ac").value)||null;
+  const count=Math.max(1,Math.min(20,parseInt(document.getElementById("f-count").value)||1));
   if(!name||isNaN(init))return;
   const se=document.getElementById("monster-search"),sel=se._sel;
-  let actions;
-  if(sel&&sel.name===name&&type==="monster"){actions=sel.actions.map(a=>({...a,used:false}));se._sel=null;}
-  else actions=(AP[type]||AP.monster).map(a=>({...a,used:false}));
+  const baseActions=(sel&&sel.name===name&&type==="monster")
+    ?sel.actions.map(a=>({...a,used:false}))
+    :(AP[type]||AP.monster).map(a=>({...a,used:false}));
+  if(sel&&sel.name===name)se._sel=null;
   if(!combat.combatants)combat.combatants=[];
-  combat.combatants.push({id:uid(),name,initiative:init,type,hp,maxHp:hp,ac,actions});
+  for(let i=0;i<count;i++){
+    const label=count>1?`${name} ${i+1}`:name;
+    // Slightly vary initiative for groups (same roll, small offset keeps order readable)
+    const initVal=count>1?init-i:init;
+    combat.combatants.push({id:uid(),name:label,initiative:initVal,type,hp,maxHp:hp,ac,actions:baseActions.map(a=>({...a}))});
+  }
   combat.combatants.sort((a,b)=>b.initiative-a.initiative);
   ["f-name","f-init","f-hp","f-ac"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("f-count").value="1";
   document.getElementById("f-saves-display").style.display="none";
   saveCombat();render();
 }
@@ -843,19 +860,22 @@ function removeCombatant(id){
   saveCombat();render();
 }
 
+function isDying(c){return c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead;}
+function isOutOfFight(c){return c.dead||c.dst?.dead||(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead);}
+
 function applyHp(id,sign){
   const inp=document.getElementById(`hpd-${id}`);
   const delta=Math.abs(parseInt(inp?.value)||0)*sign;if(!delta)return;
   combat.combatants=combat.combatants.map(c=>{
     if(c.id!==id)return c;
     const newHp=Math.max(0,Math.min(c.maxHp||9999,(c.hp||0)+delta));
-    // Trigger DST if player drops to 0
+    // Healing clears DST and revives dead
+    if(delta>0){return{...c,hp:newHp,dst:null,dead:false};}
+    // Damage: trigger DST if player hits 0
     let dst=c.dst;
     if(newHp===0&&c.type==="player"&&!dst){
       dst={successes:0,failures:0,stable:false,dead:false};
     }
-    // Healing clears DST and revives dead
-    if(delta>0){dst=null;return{...c,hp:newHp,dst,dead:false};}
     return{...c,hp:newHp,dst};
   });
   const c=combat.combatants.find(x=>x.id===id);
@@ -864,10 +884,17 @@ function applyHp(id,sign){
     :`💔 <strong>${esc(c.name)}</strong> took ${Math.abs(delta)} damage → ${c.hp} HP`,
     ...(combat.log||[]).slice(0,49)];
   if(inp)inp.value="";
-  saveCombat();render();
-  // Show DST modal if player just hit 0
+  // If current active player just hit 0, open DST and advance turn
   if(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead){
+    combat.log=[`☠ <strong>${esc(c.name)}</strong> er nede! Death Saving Throws!`,...combat.log.slice(0,49)];
+    saveCombat();render();
     openDST(id);
+    // Auto-advance past dying player
+    if(combat.currentIndex===combat.combatants.findIndex(x=>x.id===id)){
+      setTimeout(()=>{advanceToNext();saveCombat();render();},300);
+    }
+  } else {
+    saveCombat();render();
   }
 }
 
@@ -933,25 +960,34 @@ function endCombat(){
   saveCombat();render();
 }
 
+function advanceToNext(){
+  if(!combat.combatants.length)return;
+  let idx=(combat.currentIndex+1)%combat.combatants.length;
+  let safety=0;
+  while(isOutOfFight(combat.combatants[idx])&&safety<combat.combatants.length){
+    idx=(idx+1)%combat.combatants.length;safety++;
+  }
+  combat.currentIndex=idx;
+}
+
 function nextTurn(){
   combat.combatants=combat.combatants.map((c,i)=>i!==combat.currentIndex?c:{...c,actions:c.actions.map(a=>({...a,used:false}))});
-  let nextIdx=(combat.currentIndex+1)%combat.combatants.length;
+  const prevIdx=combat.currentIndex;
+  let nextIdx=(prevIdx+1)%combat.combatants.length;
   let safety=0;
-  // Skip dead combatants
-  while((combat.combatants[nextIdx]?.dead||combat.combatants[nextIdx]?.dst?.dead)&&safety<combat.combatants.length){
+  while(isOutOfFight(combat.combatants[nextIdx])&&safety<combat.combatants.length){
     nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
   }
-  const prevIdx=combat.currentIndex;
   combat.currentIndex=nextIdx;
-  // New round if we wrapped past 0
-  if(nextIdx<=prevIdx&&combat.combatants.length>1){
+  // New round detection: wrapped around
+  if(nextIdx<=prevIdx){
     combat.round++;
     combat.spellTimers=(combat.spellTimers||[]).map(t=>({...t,roundsLeft:t.roundsLeft-1}));
     combat.spellTimers.filter(t=>t.roundsLeft<=0).forEach(t=>showToast(t.name,t.caster));
     combat.spellTimers=combat.spellTimers.filter(t=>t.roundsLeft>0);
   }
   const next=combat.combatants[combat.currentIndex];
-  combat.log=[nextIdx<=prevIdx&&combat.combatants.length>1
+  combat.log=[nextIdx<=prevIdx
     ?`🔔 <strong>Runde ${combat.round}</strong> begynder — <strong>${esc(next.name)}</strong> er aktiv.`
     :`➡ <strong>${esc(next.name)}</strong>s tur.`,...(combat.log||[]).slice(0,49)];
   saveCombat();render();
@@ -960,14 +996,14 @@ function nextTurn(){
 function skipTurn(){
   const sk=combat.combatants[combat.currentIndex];
   combat.log=[`⏭ <strong>${esc(sk.name)}</strong> springer over.`,...(combat.log||[]).slice(0,49)];
-  let nextIdx=(combat.currentIndex+1)%combat.combatants.length;
+  const prevIdx=combat.currentIndex;
+  let nextIdx=(prevIdx+1)%combat.combatants.length;
   let safety=0;
-  while((combat.combatants[nextIdx]?.dead||combat.combatants[nextIdx]?.dst?.dead)&&safety<combat.combatants.length){
+  while(isOutOfFight(combat.combatants[nextIdx])&&safety<combat.combatants.length){
     nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
   }
-  const prevIdx=combat.currentIndex;
   combat.currentIndex=nextIdx;
-  if(nextIdx<=prevIdx&&combat.combatants.length>1)combat.round++;
+  if(nextIdx<=prevIdx)combat.round++;
   saveCombat();render();
 }
 
@@ -1119,8 +1155,44 @@ function showToast(spellName,casterName){
 }
 function closeToast(){document.getElementById("spell-toast").style.display="none";}
 
-// Init
-async function init(){
+// ── Fullscreen + Wake Lock ────────────────────────────────────────────────
+let wakeLock=null;
+
+async function requestWakeLock(){
+  try{
+    if("wakeLock" in navigator){
+      wakeLock=await navigator.wakeLock.request("screen");
+    }
+  }catch(e){console.warn("Wake lock ikke tilgængeligt:",e);}
+}
+
+function releaseWakeLock(){
+  if(wakeLock){wakeLock.release();wakeLock=null;}
+}
+
+function toggleFullscreen(){
+  const pv=document.getElementById("player-view");
+  if(!document.fullscreenElement){
+    pv.requestFullscreen().catch(e=>console.warn("Fullscreen fejl:",e));
+    requestWakeLock();
+  } else {
+    document.exitFullscreen();
+    releaseWakeLock();
+  }
+}
+
+document.addEventListener("fullscreenchange",()=>{
+  const btn=document.getElementById("pv-fullscreen-btn");
+  btn.textContent=document.fullscreenElement?"✕":"⛶";
+});
+
+// Show fullscreen button when on player view
+function updateFullscreenBtn(){
+  const btn=document.getElementById("pv-fullscreen-btn");
+  btn.classList.toggle("visible",currentView==="player");
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
   await loadData();
   await loadFromSupabase();
   subscribeRealtime();
