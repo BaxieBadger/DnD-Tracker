@@ -140,24 +140,29 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
 #player-view.pal-npc{background:linear-gradient(160deg,var(--np-bg1),var(--np-bg2))}
 #player-view.pal-idle{background:var(--ink)}
 .pv-round{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;text-transform:uppercase}
-html{font-size:16px}
-@media(min-width:768px){html{font-size:20px}}
-.pv-card{width:100%;max-width:520px;border:2px solid;border-radius:8px;padding:clamp(24px,5vw,48px) clamp(20px,5vw,40px);text-align:center;position:relative;transition:all .5s}
+html{font-size:18px}
+#player-view{flex-direction:column;align-items:center;justify-content:center;padding:0;gap:0;transition:background 1s;min-height:calc(100vh - 45px)}
+#player-view.pal-player{background:linear-gradient(160deg,var(--pl-bg1),var(--pl-bg2))}
+#player-view.pal-monster{background:linear-gradient(160deg,var(--mo-bg1),var(--mo-bg2))}
+#player-view.pal-npc{background:linear-gradient(160deg,var(--np-bg1),var(--np-bg2))}
+#player-view.pal-idle{background:var(--ink)}
+.pv-round{font-family:'Cinzel',serif;font-size:clamp(12px,2vw,18px);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
+.pv-card{width:100%;max-width:600px;border:2px solid;border-radius:8px;padding:32px 28px;text-align:center;position:relative;transition:all .5s}
 .pv-card::after{content:'';position:absolute;inset:6px;border:1px solid rgba(255,255,255,.08);border-radius:4px;pointer-events:none}
 .pv-card.pal-player{border-color:var(--pl-border);background:rgba(10,22,40,.7);box-shadow:0 0 60px rgba(74,144,217,.15)}
 .pv-card.pal-monster{border-color:var(--mo-border);background:rgba(24,8,8,.7);box-shadow:0 0 60px rgba(139,58,26,.2)}
 .pv-card.pal-npc{border-color:var(--np-border);background:rgba(8,24,8,.7);box-shadow:0 0 60px rgba(42,106,42,.2)}
-.pv-whose-turn{font-family:'Cinzel',serif;font-size:clamp(9px,1.5vw,14px);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
-.pv-name{font-family:'Cinzel Decorative',serif;font-size:clamp(36px,8vw,72px);line-height:1.1;margin-bottom:8px;transition:color .5s,text-shadow .5s}
-.pv-sub{font-size:clamp(14px,2.5vw,22px);font-style:italic}
-.pv-timer{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);letter-spacing:4px}
-.pv-timer-label{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,13px);letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-top:2px}
-.pv-order{width:100%;max-width:520px;display:flex;flex-direction:column;gap:4px}
-.pv-order-title{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,13px);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;text-align:center}
-.pv-order-item{display:flex;align-items:center;gap:10px;padding:clamp(6px,1.5vw,10px) clamp(10px,2vw,14px);border:1px solid transparent;border-radius:3px;opacity:.45;transition:all .3s}
+.pv-whose-turn{font-family:'Cinzel',serif;font-size:clamp(12px,2vw,16px);letter-spacing:4px;text-transform:uppercase;margin-bottom:12px}
+.pv-name{font-family:'Cinzel Decorative',serif;font-size:clamp(48px,10vw,88px);line-height:1.05;margin-bottom:10px;transition:color .5s,text-shadow .5s}
+.pv-sub{font-size:clamp(20px,3.5vw,30px);font-style:italic}
+.pv-timer{font-family:'Cinzel Decorative',serif;font-size:clamp(36px,6vw,60px);letter-spacing:4px}
+.pv-timer-label{font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,15px);letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-top:4px}
+.pv-order{width:100%;max-width:600px;display:flex;flex-direction:column;gap:5px}
+.pv-order-title{font-family:'Cinzel',serif;font-size:clamp(11px,1.5vw,15px);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;text-align:center}
+.pv-order-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid transparent;border-radius:3px;opacity:.45;transition:all .3s}
 .pv-order-item.current{opacity:1}
-.pv-order-num{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,2vw,18px);min-width:24px}
-.pv-order-name{font-size:clamp(13px,2vw,18px);flex:1}
+.pv-order-num{font-family:'Cinzel Decorative',serif;font-size:clamp(16px,2.5vw,22px);min-width:28px}
+.pv-order-name{font-size:clamp(16px,2.5vw,22px);flex:1}
 #spell-toast{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#1a0808,#2a1010);border:2px solid var(--gold-d);border-radius:6px;padding:14px 18px;max-width:280px;z-index:600;display:none;box-shadow:0 8px 32px rgba(0,0,0,.6)}
 .toast-title{font-family:'Cinzel Decorative',serif;font-size:12px;color:var(--gold);margin-bottom:4px}
 .toast-body{font-size:13px;color:var(--text);font-style:italic}
@@ -313,26 +318,26 @@ html{font-size:16px}
       <ellipse cx="120" cy="210" rx="30" ry="12" fill="rgba(20,5,5,.15)"/>
     </svg>
   </div>
-  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:24px;padding:32px 20px">
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:20px;padding:20px">
     <div id="pv-idle" style="text-align:center">
-      <div style="font-family:'Cinzel Decorative',serif;font-size:28px;color:var(--gold-d)">⚔ Venter på GM…</div>
-      <div style="font-size:16px;color:var(--text-d);margin-top:10px;font-style:italic">Kampen er ikke begyndt endnu.</div>
+      <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(24px,5vw,36px);color:var(--gold-d)">⚔ Venter på GM…</div>
+      <div style="font-size:clamp(16px,2.5vw,22px);color:var(--text-d);margin-top:10px;font-style:italic">Kampen er ikke begyndt endnu.</div>
     </div>
-  </div>
-  <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;min-height:calc(100vh - 45px);position:relative;z-index:1;padding:32px 20px">
-    <div id="pv-round" class="pv-round">— Runde 1 —</div>
-    <div id="pv-card" class="pv-card pal-player">
-      <div id="pv-whose" class="pv-whose-turn">Det er denne spillers tur</div>
-      <div id="pv-name" class="pv-name">—</div>
-      <div id="pv-sub" class="pv-sub">—</div>
-    </div>
-    <div style="text-align:center">
-      <div id="pv-timer" class="pv-timer">00:00</div>
-      <div id="pv-timer-label" class="pv-timer-label">Kampvarighed</div>
-    </div>
-    <div class="pv-order">
-      <div id="pv-order-title" class="pv-order-title">Initiativrækkefølge</div>
-      <div id="pv-order-list"></div>
+    <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;gap:16px;width:100%">
+      <div id="pv-round" class="pv-round">— Runde 1 —</div>
+      <div id="pv-card" class="pv-card pal-player">
+        <div id="pv-whose" class="pv-whose-turn">Det er denne spillers tur</div>
+        <div id="pv-name" class="pv-name">—</div>
+        <div id="pv-sub" class="pv-sub">—</div>
+      </div>
+      <div style="text-align:center">
+        <div id="pv-timer" class="pv-timer">00:00</div>
+        <div id="pv-timer-label" class="pv-timer-label">Kampvarighed</div>
+      </div>
+      <div class="pv-order">
+        <div id="pv-order-title" class="pv-order-title">Initiativrækkefølge</div>
+        <div id="pv-order-list"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -645,14 +650,13 @@ function renderGM(){
 
 function renderPlayer(){
   const ic=combat.phase==="combat";
-  document.getElementById("pv-idle").style.display=ic?"none":"flex";
+  document.getElementById("pv-idle").style.display=ic?"none":"block";
   document.getElementById("pv-combat").style.display=ic?"flex":"none";
   const pv=document.getElementById("player-view");
   const skull=document.getElementById("pv-skull");
   if(!ic){pv.className="pal-idle";skull.style.opacity="0";return;}
   const c=combat.combatants[combat.currentIndex],type=c?.type||"player";
   pv.className=`pal-${type}`;
-  // Show skull on monster/npc turns, hide on player turns
   skull.style.opacity=type==="player"?"0":"0.18";
   const pal=type==="player"?{a:"var(--pl-accent-l)",d:"var(--pl-dim)"}
     :type==="monster"?{a:"var(--mo-accent-l)",d:"var(--mo-dim)"}
@@ -660,7 +664,7 @@ function renderPlayer(){
   const s=(id,prop,val)=>{const el=document.getElementById(id);if(el)el.style[prop]=val;};
   const t=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   s("pv-round","color",pal.d);t("pv-round",`— Runde ${combat.round} —`);
-  s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 30px ${pal.a}66`);t("pv-name",c?c.name:"—");
+  s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 40px ${pal.a}88`);t("pv-name",c?c.name:"—");
   s("pv-timer","color",pal.d);s("pv-timer-label","color",pal.d);
   s("pv-order-title","color",pal.d);s("pv-whose","color",pal.d);
   t("pv-timer",fmt(combat.elapsedSeconds));
@@ -671,11 +675,13 @@ function renderPlayer(){
   else sub.textContent=typeLabel(type);
   document.getElementById("pv-order-list").innerHTML=(combat.combatants||[]).map((x,i)=>{
     const cur=i===combat.currentIndex;
-    const dstBadge=x.dst&&!x.dst.stable&&!x.dst.dead?` <span style="color:#c0392b;font-size:10px">☠ DST</span>`:x.dst?.stable?` <span style="color:#4a9a4a;font-size:10px">✦ Stabil</span>`:x.dst?.dead?` <span style="color:#8b1a1a;font-size:10px">☠ Død</span>`:"";
-    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}">
+    const dead=x.dead||x.dst?.dead;
+    const dying=x.hp===0&&x.type==="player"&&x.dst&&!x.dst.stable&&!x.dst.dead;
+    const badge=dead?` <span style="color:#8b1a1a;font-size:12px">☠</span>`:dying?` <span style="color:#c0392b;font-size:12px">☠ DST</span>`:"";
+    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}${dead||dying?";opacity:.35":""}">
       <div class="pv-order-num" style="color:${pal.d}">${x.initiative}</div>
-      <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${dstBadge}</div>
-      ${cur?`<span style="color:${pal.a};font-size:10px">◀</span>`:""}
+      <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${badge}</div>
+      ${cur?`<span style="color:${pal.a};font-size:14px">◀</span>`:""}
     </div>`;
   }).join("");
 }
