@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>⚔ D&D Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c9a84c;--gold-l:#e8c97a;--gold-d:#7a6230;
+  --blood:#8b1a1a;--ink:#0a0705;--parchment:#2a1f10;--stone:#1a1510;
+  --text:#d4b896;--text-d:#8a7255;
+  --pl-bg1:#0a1628;--pl-bg2:#0d1f3c;--pl-accent-l:#7ab8f5;--pl-border:#2a5a9a;--pl-dim:#7aa8d4;
+  --mo-bg1:#081808;--mo-bg2:#0e220e;--mo-accent-l:#4a9a4a;--mo-border:#1a5a1a;--mo-dim:#60a060;
+  --np-bg1:#180808;--np-bg2:#220e0e;--np-accent-l:#c04a20;--np-border:#5a1a0a;--np-dim:#a06040;
+}
+html,body{min-height:100%;background:var(--ink);font-family:'IM Fell English',serif;color:var(--text)}
+body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(201,168,76,.06) 0%,transparent 50%),linear-gradient(160deg,#0d0a06,#0a0705 50%,#0c0804);min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gold-d);border-radius:2px}
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--ink);border-bottom:1px solid var(--gold-d);position:sticky;top:0;z-index:100}
+#topbar-title{font-family:'Cinzel Decorative',serif;font-size:13px;color:var(--gold);letter-spacing:2px}
+#ws-status{font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:3px;border:1px solid}
+#ws-status.connected{color:#4a9a4a;border-color:#4a9a4a;background:rgba(74,154,74,.1)}
+#ws-status.disconnected{color:#c04a20;border-color:#c04a20;background:rgba(192,74,32,.1)}
+.view-toggle{display:flex}
+.view-btn{padding:7px 20px;background:transparent;border:1px solid var(--gold-d);color:var(--text-d);font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.view-btn:first-child{border-radius:4px 0 0 4px}.view-btn:last-child{border-radius:0 4px 4px 0}
+.view-btn.active{background:var(--gold-d);color:var(--gold-l);border-color:var(--gold)}
+.view-btn:hover:not(.active){border-color:var(--gold);color:var(--text)}
+.btn{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;padding:9px 18px;border-radius:3px;transition:all .2s}
+.btn-gold{background:linear-gradient(135deg,var(--gold-d),var(--gold));color:var(--ink);font-weight:700;box-shadow:0 2px 8px rgba(201,168,76,.3)}
+.btn-gold:hover{box-shadow:0 4px 16px rgba(201,168,76,.5);transform:translateY(-1px)}
+.btn-blood{background:linear-gradient(135deg,#5a1010,var(--blood));color:#ffbaba}
+.btn-blood:hover{transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--gold-d);color:var(--text-d)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:9px}.btn-xs{padding:3px 7px;font-size:9px}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none !important}
+.panel-title{font-family:'Cinzel Decorative',serif;font-size:clamp(10px,1.2vw,14px);letter-spacing:3px;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--gold-d);padding-bottom:6px;margin-bottom:10px}
+.section-divider{display:flex;align-items:center;gap:10px;color:var(--gold-d);font-size:clamp(11px,1.2vw,14px);margin:4px 0}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--gold-d);opacity:.35}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-family:'Cinzel',serif;font-size:clamp(9px,1vw,11px);letter-spacing:2px;text-transform:uppercase;color:var(--text-d)}
+.field input,.field select,.field textarea{background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:7px 9px;border-radius:3px;font-family:'IM Fell English',serif;font-size:clamp(13px,1.4vw,16px);outline:none;width:100%;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--gold)}.field select option{background:var(--ink)}
+.form-row{display:flex;gap:8px}
+#gm-view{display:grid;grid-template-columns:300px 1fr 280px;min-height:calc(100vh - 45px)}
+#player-view{display:none;min-height:calc(100vh - 45px)}
+.sidebar-left,.sidebar-right{background:var(--stone);overflow-y:auto;max-height:calc(100vh - 45px);position:sticky;top:45px;align-self:start}
+.sidebar-left{border-right:2px solid var(--gold-d);padding:16px}
+.sidebar-right{border-left:2px solid var(--gold-d);padding:16px}
+.gm-main{padding:20px;display:flex;flex-direction:column;gap:16px}
+.tab-nav{display:flex;border-bottom:1px solid var(--gold-d);margin-bottom:12px}
+.tab-btn{padding:6px 12px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-d);font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:-1px}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0}
+.stat-hex{display:flex;flex-direction:column;align-items:center;gap:2px}
+.stat-hex-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;color:var(--text-d);text-transform:uppercase}
+.stat-hex-shape{width:44px;height:50px;background:linear-gradient(160deg,#1a1208,#0e0a04);border:1px solid var(--gold-d);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .2s}
+.stat-hex-shape:hover{border-color:var(--gold)}
+.stat-hex-val{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold-l);line-height:1}
+.stat-hex-mod{font-family:'Cinzel',serif;font-size:9px;color:var(--text-d)}
+#init-list{display:flex;flex-direction:column;gap:5px}
+.init-item{display:flex;align-items:flex-start;gap:7px;padding:9px;background:var(--ink);border:1px solid var(--gold-d);border-radius:3px;position:relative;transition:all .2s}
+.init-item.active{border-color:var(--gold);background:var(--parchment);box-shadow:0 0 10px rgba(201,168,76,.15)}
+.init-item.active::before{content:'⚔';position:absolute;left:-16px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:11px;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.init-num{font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold);min-width:24px;text-align:center;padding-top:1px}
+.init-info{flex:1;min-width:0}
+.init-name{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.init-type{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;white-space:normal;word-break:break-word}
+.t-player{color:#4a90d9}.t-monster{color:#4a9a4a}.t-npc{color:#c04a20}
+.hp-bar{height:3px;background:#1a1010;border-radius:2px;overflow:hidden;margin-top:3px}
+.hp-fill{height:100%;border-radius:2px;transition:width .3s}
+.hp-text{font-size:9px;color:var(--text-d);font-family:'Cinzel',serif}
+.hp-row{display:flex;gap:4px;align-items:center;margin-top:4px}
+.hp-input{width:44px;background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:3px 5px;border-radius:2px;font-size:12px;outline:none;text-align:center}
+.init-remove{background:none;border:none;color:var(--blood);cursor:pointer;font-size:13px;opacity:.5;transition:opacity .2s;padding:1px 3px;flex-shrink:0}
+.init-remove:hover{opacity:1}
+.empty-msg{color:var(--text-d);font-size:12px;font-style:italic;text-align:center;padding:14px}
+.combat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg,var(--stone),var(--parchment));border:1px solid var(--gold-d);border-radius:4px}
+.combat-round{font-family:'Cinzel Decorative',serif;font-size:24px;color:var(--gold);text-shadow:0 0 20px rgba(201,168,76,.4)}
+.combat-round span{font-size:9px;color:var(--text-d);display:block;font-family:'Cinzel',serif;letter-spacing:2px}
+.combat-timer{font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--text)}
+.combat-timer span{font-size:9px;color:var(--text-d);display:block;text-align:center;font-family:'Cinzel',serif;letter-spacing:2px}
+.current-turn-card{background:linear-gradient(135deg,var(--parchment),var(--stone));border:2px solid var(--gold);border-radius:6px;padding:18px;box-shadow:0 0 40px rgba(201,168,76,.12),inset 0 0 40px rgba(0,0,0,.3);position:relative;overflow:hidden}
+.current-turn-card::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c9a84c' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.ct-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--gold-d);margin-bottom:4px}
+.ct-name{font-family:'Cinzel Decorative',serif;font-size:24px;color:var(--gold-l);text-shadow:0 0 20px rgba(201,168,76,.4);margin-bottom:12px}
+.action-buckets{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.action-bucket{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);border-radius:5px;padding:9px}
+.bucket-header{font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:5px}
+.bucket-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.bucket-chips{display:flex;flex-direction:column;gap:3px}
+.action-chip{position:relative;padding:5px 8px;border-radius:3px;border:1px solid;font-family:'Cinzel',serif;font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .15s;text-align:left;width:100%;background:none}
+.action-chip:hover:not(.used){filter:brightness(1.3);transform:translateX(2px)}
+.action-chip.used{opacity:.28;text-decoration:line-through;cursor:default}
+.action-chip .tip{display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:#1a1208;border:1px solid var(--gold-d);color:var(--text);font-family:'IM Fell English',serif;font-size:11px;font-style:italic;padding:7px 11px;border-radius:4px;width:220px;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,.7);line-height:1.5;pointer-events:none}
+.action-chip .tip::after{content:'';position:absolute;top:100%;left:12px;border:5px solid transparent;border-top-color:var(--gold-d)}
+.action-chip:hover .tip{display:block}
+.ct-controls{display:flex;gap:8px}
+.monster-opt:hover{background:rgba(201,168,76,.15) !important}
+.spell-timer-card{background:rgba(0,0,0,.3);border:1px solid;border-radius:5px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.spell-timer-card.urgent{animation:urgentPulse 1s ease-in-out infinite}
+@keyframes urgentPulse{0%,100%{box-shadow:0 0 6px currentColor}50%{box-shadow:0 0 20px currentColor}}
+.spell-name{font-family:'Cinzel',serif;font-size:11px;color:var(--gold);flex:1}
+.spell-caster{font-size:10px;color:var(--text-d);font-style:italic}
+.spell-rounds{font-family:'Cinzel Decorative',serif;font-size:20px;color:var(--gold-l)}
+.spell-rounds-label{font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text-d)}
+.spell-remove{background:none;border:none;color:var(--blood);cursor:pointer;font-size:14px;opacity:.5;padding:2px 4px}
+.spell-remove:hover{opacity:1}
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center}
+#modal-overlay.open{display:flex}
+#modal{background:linear-gradient(145deg,#1a1208,#0e0a04);border:2px solid var(--gold-d);border-radius:8px;width:min(680px,95vw);max-height:90vh;overflow-y:auto;padding:24px;position:relative;box-shadow:0 0 60px rgba(0,0,0,.8)}
+#modal::before{content:'';position:absolute;inset:6px;border:1px solid rgba(201,168,76,.1);border-radius:4px;pointer-events:none}
+.modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text-d);cursor:pointer;font-size:20px}
+.modal-close:hover{color:var(--gold)}
+.modal-title{font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);margin-bottom:16px}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.skill-row{display:flex;align-items:center;gap:6px;padding:3px 0}
+.skill-row input[type=checkbox]{accent-color:var(--gold);width:13px;height:13px;cursor:pointer}
+.skill-row label{font-size:12px;cursor:pointer;flex:1}
+.skill-row .skill-bonus{font-family:'Cinzel',serif;font-size:10px;color:var(--gold-d);min-width:28px;text-align:right}
+.spell-slot-row{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.spell-slot-level{font-family:'Cinzel',serif;font-size:9px;letter-spacing:1px;color:var(--text-d);min-width:50px}
+.add-spell-row{display:flex;gap:6px;align-items:flex-end;flex-wrap:wrap}
+.log-box{background:var(--ink);border:1px solid var(--gold-d);border-radius:4px;padding:10px;height:130px;overflow-y:auto;display:flex;flex-direction:column-reverse;gap:2px}
+.log-entry{font-size:12px;color:var(--text-d);font-style:italic;line-height:1.4}
+.log-entry strong{color:var(--text);font-style:normal}
+.idle-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;min-height:300px;gap:12px;text-align:center;padding:60px}
+.idle-title{font-family:'Cinzel Decorative',serif;font-size:20px;color:var(--gold)}
+.idle-sub{color:var(--text-d);font-style:italic}
+#player-view{flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:24px;transition:background 1s}
+#player-view.pal-player{background:linear-gradient(160deg,var(--pl-bg1),var(--pl-bg2))}
+#player-view.pal-monster{background:linear-gradient(160deg,var(--mo-bg1),var(--mo-bg2))}
+#player-view.pal-npc{background:linear-gradient(160deg,var(--np-bg1),var(--np-bg2))}
+#player-view.pal-idle{background:var(--ink)}
+.pv-round{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;text-transform:uppercase}
+html{font-size:16px}
+@media(min-width:768px){html{font-size:20px}}
+.pv-card{width:100%;max-width:520px;border:2px solid;border-radius:8px;padding:clamp(24px,5vw,48px) clamp(20px,5vw,40px);text-align:center;position:relative;transition:all .5s}
+.pv-card::after{content:'';position:absolute;inset:6px;border:1px solid rgba(255,255,255,.08);border-radius:4px;pointer-events:none}
+.pv-card.pal-player{border-color:var(--pl-border);background:rgba(10,22,40,.7);box-shadow:0 0 60px rgba(74,144,217,.15)}
+.pv-card.pal-monster{border-color:var(--mo-border);background:rgba(24,8,8,.7);box-shadow:0 0 60px rgba(139,58,26,.2)}
+.pv-card.pal-npc{border-color:var(--np-border);background:rgba(8,24,8,.7);box-shadow:0 0 60px rgba(42,106,42,.2)}
+.pv-whose-turn{font-family:'Cinzel',serif;font-size:clamp(9px,1.5vw,14px);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
+.pv-name{font-family:'Cinzel Decorative',serif;font-size:clamp(36px,8vw,72px);line-height:1.1;margin-bottom:8px;transition:color .5s,text-shadow .5s}
+.pv-sub{font-size:clamp(14px,2.5vw,22px);font-style:italic}
+.pv-timer{font-family:'Cinzel Decorative',serif;font-size:clamp(28px,5vw,52px);letter-spacing:4px}
+.pv-timer-label{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,13px);letter-spacing:3px;text-transform:uppercase;opacity:.5;margin-top:2px}
+.pv-order{width:100%;max-width:520px;display:flex;flex-direction:column;gap:4px}
+.pv-order-title{font-family:'Cinzel',serif;font-size:clamp(9px,1.2vw,13px);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;text-align:center}
+.pv-order-item{display:flex;align-items:center;gap:10px;padding:clamp(6px,1.5vw,10px) clamp(10px,2vw,14px);border:1px solid transparent;border-radius:3px;opacity:.45;transition:all .3s}
+.pv-order-item.current{opacity:1}
+.pv-order-num{font-family:'Cinzel Decorative',serif;font-size:clamp(12px,2vw,18px);min-width:24px}
+.pv-order-name{font-size:clamp(13px,2vw,18px);flex:1}
+#spell-toast{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#1a0808,#2a1010);border:2px solid var(--gold-d);border-radius:6px;padding:14px 18px;max-width:280px;z-index:600;display:none;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.toast-title{font-family:'Cinzel Decorative',serif;font-size:12px;color:var(--gold);margin-bottom:4px}
+.toast-body{font-size:13px;color:var(--text);font-style:italic}
+.toast-close{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text-d);cursor:pointer;font-size:14px}
+/* Player fullscreen */
+#player-view.fullscreen-mode{position:fixed;inset:0;z-index:400;overflow-y:auto}
+#pv-fullscreen-btn{position:fixed;bottom:16px;right:16px;z-index:450;background:rgba(0,0,0,.6);border:1px solid var(--gold-d);color:var(--gold-d);font-size:20px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center}
+#pv-fullscreen-btn.visible{display:flex}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="topbar-title">⚔ D&D Initiative Tracker</div>
+  <div class="view-toggle">
+    <button class="view-btn active" onclick="setView('gm')">⚔ GM</button>
+    <button class="view-btn" onclick="setView('player')">🛡 Spillere</button>
+  </div>
+  <div id="ws-status" class="disconnected">Forbinder…</div>
+</div>
+
+<div id="gm-view">
+  <div class="sidebar-left">
+    <div class="panel-title">Initiativ</div>
+    <div style="margin-bottom:10px">
+      <div class="field" style="margin-bottom:6px"><label>Tilføj gemt karakter</label>
+        <div style="display:flex;gap:6px;align-items:flex-end">
+          <select id="char-select" style="flex:1;background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:7px;border-radius:3px;font-size:13px;outline:none"><option value="">— Vælg —</option></select>
+          <input id="char-init-input" type="number" placeholder="Init" style="width:54px;background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:7px;border-radius:3px;font-size:13px;outline:none"/>
+          <button class="btn btn-gold btn-sm" onclick="addFromChar()">+</button>
+        </div>
+      </div>
+    </div>
+    <details style="margin-bottom:10px">
+      <summary style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text-d);cursor:pointer;padding:4px 0">Tilføj manuelt / monster ▾</summary>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:7px">
+        <div class="field" style="position:relative">
+          <label>Søg monster</label>
+          <input id="monster-search" placeholder="Goblin, Dragon…" autocomplete="off" oninput="onMonsterSearch(this.value)" onkeydown="onMonsterKey(event)"/>
+          <div id="monster-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a1208;border:1px solid var(--gold-d);border-radius:0 0 4px 4px;z-index:200;max-height:180px;overflow-y:auto"></div>
+        </div>
+        <div class="form-row">
+          <div class="field" style="flex:2"><label>Navn</label><input id="f-name" placeholder="Goblin…" onkeydown="if(event.key==='Enter')addManual()"/></div>
+          <div class="field" style="flex:1"><label>Init</label><input id="f-init" type="number" placeholder="14" onkeydown="if(event.key==='Enter')addManual()"/></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Type</label><select id="f-type"><option value="player">Spiller</option><option value="monster" selected>Monster</option><option value="npc">NPC</option></select></div>
+          <div class="field"><label>Max HP</label><input id="f-hp" type="number" placeholder="30"/></div>
+          <div class="field"><label>AC</label><input id="f-ac" type="number" placeholder="14"/></div>
+          <div class="field"><label>Antal</label><input id="f-count" type="number" placeholder="1" min="1" max="20" value="1"/></div>
+        </div>
+        <div id="f-saves-display" style="display:none;font-family:'Cinzel',serif;font-size:9px;color:var(--text-d);letter-spacing:1px;padding:4px 0"></div>
+        <button class="btn btn-gold btn-sm" onclick="addManual()" style="width:100%">+ Tilføj</button>
+      </div>
+    </details>
+    <div class="section-divider">Rækkefølge</div>
+    <div id="init-list" style="margin-top:6px"><div class="empty-msg">Ingen kombattanter</div></div>
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+      <button id="btn-start" class="btn btn-gold" onclick="startCombat()" disabled style="width:100%">⚔ Start Kamp</button>
+      <button id="btn-end" class="btn btn-blood" onclick="endCombat()" style="display:none;width:100%">✕ Afslut Kamp</button>
+    </div>
+  </div>
+
+  <div class="gm-main">
+    <div id="gm-idle" class="idle-center">
+      <div class="idle-title">⚔ Initiative Tracker</div>
+      <div class="idle-sub">Tilføj kombattanter og tryk "Start Kamp"</div>
+    </div>
+    <div id="gm-combat" style="display:none;flex-direction:column;gap:14px">
+      <div class="combat-header">
+        <div class="combat-round"><span>Runde</span><span id="round-num">1</span></div>
+        <div style="text-align:center">
+          <div id="active-name" style="font-family:'Cinzel Decorative',serif;font-size:13px;color:var(--gold-d)">—</div>
+          <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-d)">Aktiv</div>
+        </div>
+        <div class="combat-timer"><span>Tid</span><span id="timer-display">00:00</span></div>
+      </div>
+      <div class="current-turn-card">
+        <div class="ct-label">⚔ Aktiv Tur</div>
+        <div id="ct-name" class="ct-name">—</div>
+        <div id="gm-buckets" class="action-buckets"></div>
+        <div class="ct-controls">
+          <button class="btn btn-gold" onclick="nextTurn()">Næste Tur ➡</button>
+          <button class="btn btn-ghost" onclick="skipTurn()">⏭ Spring Over</button>
+        </div>
+      </div>
+      <div>
+        <div class="panel-title" style="margin-bottom:8px">Kamplog</div>
+        <div id="log-box" class="log-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-right">
+    <div class="panel-title">Karakterer</div>
+    <button class="btn btn-gold btn-sm" onclick="openModal(null)" style="width:100%;margin-bottom:10px">+ Ny karakter</button>
+    <div id="char-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:16px"></div>
+    <div class="panel-title" style="margin-top:4px">Trylleri-Timere</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+      <div class="field"><label>Trylleformular</label><input id="st-name" placeholder="Bless, Bane…"/></div>
+      <div class="form-row">
+        <div class="field"><label>Kaster</label><input id="st-caster" placeholder="Navn…"/></div>
+        <div class="field"><label>Runder</label><input id="st-dur" type="number" placeholder="10" min="1"/></div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="addSpellTimer()" style="width:100%">+ Start Timer</button>
+    </div>
+    <div id="spell-timer-list" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+</div>
+
+<div id="player-view" class="pal-idle">
+  <button id="pv-fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+  <!-- Skull background -->
+  <div id="pv-skull" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.5s">
+    <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="width:min(70vw,400px);height:auto;filter:drop-shadow(0 0 40px rgba(139,26,26,.6))">
+      <!-- Smoke wisps -->
+      <ellipse cx="100" cy="30" rx="60" ry="25" fill="rgba(80,20,20,.15)"/>
+      <ellipse cx="70" cy="20" rx="35" ry="18" fill="rgba(60,15,15,.12)"/>
+      <ellipse cx="130" cy="25" rx="40" ry="20" fill="rgba(60,15,15,.12)"/>
+      <ellipse cx="100" cy="10" rx="50" ry="15" fill="rgba(40,10,10,.1)"/>
+      <!-- Skull cranium -->
+      <ellipse cx="100" cy="90" rx="72" ry="68" fill="rgba(15,5,5,.85)" stroke="rgba(139,26,26,.5)" stroke-width="1.5"/>
+      <ellipse cx="100" cy="80" rx="65" ry="58" fill="rgba(20,8,8,.6)" stroke="rgba(100,20,20,.3)" stroke-width="1"/>
+      <!-- Eye sockets -->
+      <ellipse cx="74" cy="88" rx="22" ry="20" fill="rgba(0,0,0,.95)" stroke="rgba(139,26,26,.4)" stroke-width="1"/>
+      <ellipse cx="126" cy="88" rx="22" ry="20" fill="rgba(0,0,0,.95)" stroke="rgba(139,26,26,.4)" stroke-width="1"/>
+      <!-- Eye glow -->
+      <ellipse cx="74" cy="88" rx="10" ry="9" fill="rgba(139,26,26,.25)"/>
+      <ellipse cx="126" cy="88" rx="10" ry="9" fill="rgba(139,26,26,.25)"/>
+      <ellipse cx="74" cy="88" rx="4" ry="4" fill="rgba(192,57,43,.4)"/>
+      <ellipse cx="126" cy="88" rx="4" ry="4" fill="rgba(192,57,43,.4)"/>
+      <!-- Nasal cavity -->
+      <path d="M93 110 Q100 105 107 110 Q105 122 100 124 Q95 122 93 110Z" fill="rgba(0,0,0,.9)" stroke="rgba(100,20,20,.3)" stroke-width="0.8"/>
+      <!-- Cheekbones -->
+      <path d="M28 100 Q45 115 55 130" fill="none" stroke="rgba(80,20,20,.3)" stroke-width="1.5"/>
+      <path d="M172 100 Q155 115 145 130" fill="none" stroke="rgba(80,20,20,.3)" stroke-width="1.5"/>
+      <!-- Jaw -->
+      <rect x="55" y="148" width="90" height="38" rx="8" fill="rgba(12,4,4,.9)" stroke="rgba(139,26,26,.4)" stroke-width="1.2"/>
+      <!-- Teeth -->
+      <rect x="62" y="152" width="11" height="20" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="76" y="150" width="11" height="24" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="90" y="150" width="11" height="24" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="104" y="150" width="11" height="24" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="118" y="152" width="11" height="20" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <!-- Crown crack -->
+      <path d="M95 30 Q98 55 100 70 Q102 85 99 95" fill="none" stroke="rgba(139,26,26,.35)" stroke-width="1.2"/>
+      <!-- Lightning at top -->
+      <path d="M90 5 L85 18 L95 18 L88 32" fill="none" stroke="rgba(150,180,220,.3)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M108 8 L104 20 L112 20 L106 34" fill="none" stroke="rgba(150,180,220,.2)" stroke-width="1" stroke-linecap="round"/>
+      <!-- Smoke at bottom -->
+      <ellipse cx="100" cy="200" rx="55" ry="18" fill="rgba(30,5,5,.2)"/>
+      <ellipse cx="80" cy="210" rx="30" ry="12" fill="rgba(20,5,5,.15)"/>
+      <ellipse cx="120" cy="210" rx="30" ry="12" fill="rgba(20,5,5,.15)"/>
+    </svg>
+  </div>
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:24px;padding:32px 20px">
+    <div id="pv-idle" style="text-align:center">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:28px;color:var(--gold-d)">⚔ Venter på GM…</div>
+      <div style="font-size:16px;color:var(--text-d);margin-top:10px;font-style:italic">Kampen er ikke begyndt endnu.</div>
+    </div>
+  </div>
+  <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;min-height:calc(100vh - 45px);position:relative;z-index:1;padding:32px 20px">
+    <div id="pv-round" class="pv-round">— Runde 1 —</div>
+    <div id="pv-card" class="pv-card pal-player">
+      <div id="pv-whose" class="pv-whose-turn">Det er denne spillers tur</div>
+      <div id="pv-name" class="pv-name">—</div>
+      <div id="pv-sub" class="pv-sub">—</div>
+    </div>
+    <div style="text-align:center">
+      <div id="pv-timer" class="pv-timer">00:00</div>
+      <div id="pv-timer-label" class="pv-timer-label">Kampvarighed</div>
+    </div>
+    <div class="pv-order">
+      <div id="pv-order-title" class="pv-order-title">Initiativrækkefølge</div>
+      <div id="pv-order-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DST MODAL -->
+<div id="dst-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;align-items:center;justify-content:center">
+  <div style="background:linear-gradient(145deg,#1a0505,#0e0202);border:2px solid #8b1a1a;border-radius:8px;width:min(380px,92vw);padding:28px;text-align:center;position:relative;box-shadow:0 0 60px rgba(139,26,26,.5)">
+    <div style="font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#8b1a1a;margin-bottom:8px">Death Saving Throws</div>
+    <div id="dst-name" style="font-family:'Cinzel Decorative',serif;font-size:22px;color:#d4b896;margin-bottom:20px">—</div>
+    <div style="display:flex;justify-content:space-around;margin-bottom:20px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#4a9a4a;margin-bottom:8px">Successes</div>
+        <div id="dst-successes"></div>
+      </div>
+      <div style="font-size:28px;color:#8b1a1a;align-self:center">☠</div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c0392b;margin-bottom:8px">Failures</div>
+        <div id="dst-failures"></div>
+      </div>
+    </div>
+    <div id="dst-msg" style="font-size:13px;font-style:italic;color:var(--text-d);min-height:20px;margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-blood" onclick="dstRoll(false)" style="flex:1">✕ Failure</button>
+      <button class="btn btn-gold" onclick="dstRoll(true)" style="flex:1">✓ Success</button>
+    </div>
+    <button onclick="closeDST()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-d);cursor:pointer;font-size:18px">✕</button>
+  </div>
+</div>
+
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">Ny Karakter</div>
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('basics')">Basis</button>
+      <button class="tab-btn" onclick="switchTab('skills')">Færdigheder</button>
+      <button class="tab-btn" onclick="switchTab('spells')">Trylleformularer</button>
+    </div>
+    <div id="tab-basics" class="tab-panel active">
+      <div class="form-row" style="margin-bottom:10px">
+        <div class="field" style="flex:2"><label>Navn</label><input id="m-name" placeholder="Thorin…"/></div>
+        <div class="field"><label>Klasse</label><select id="m-class"><option value="">— Vælg —</option><option>Barbarian</option><option>Bard</option><option>Cleric</option><option>Druid</option><option>Fighter</option><option>Monk</option><option>Paladin</option><option>Ranger</option><option>Rogue</option><option>Sorcerer</option><option>Warlock</option><option>Wizard</option></select></div>
+        <div class="field"><label>Race</label><input id="m-race" placeholder="Dwarf…"/></div>
+      </div>
+      <div class="form-row" style="margin-bottom:10px">
+        <div class="field"><label>Niveau</label><input id="m-level" type="number" min="1" max="20" placeholder="1"/></div>
+        <div class="field"><label>Max HP</label><input id="m-hp" type="number" placeholder="30"/></div>
+        <div class="field"><label>AC</label><input id="m-ac" type="number" placeholder="15"/></div>
+        <div class="field"><label>Init-bonus</label><input id="m-initbonus" type="number" placeholder="2"/></div>
+        <div class="field"><label>Hastighed</label><input id="m-speed" type="number" placeholder="30"/></div>
+      </div>
+      <div class="section-divider" style="margin:10px 0">Egenskaber</div>
+      <div class="stats-grid" id="modal-stats"></div>
+      <div class="section-divider" style="margin:10px 0">Ekstra handlinger</div>
+      <div class="field"><input id="m-extra-actions" placeholder="Raseri, Anden vind…"/></div>
+    </div>
+    <div id="tab-skills" class="tab-panel">
+      <div style="font-size:12px;color:var(--text-d);font-style:italic;margin-bottom:10px">Markér proficiencies.</div>
+      <div class="skills-grid" id="skills-grid"></div>
+    </div>
+    <div id="tab-spells" class="tab-panel">
+      <div class="section-divider" style="margin-bottom:10px">Spell Slots</div>
+      <div id="spell-slots-editor"></div>
+      <div class="section-divider" style="margin:12px 0">Kendte Trylleformularer</div>
+      <div class="add-spell-row" style="margin-bottom:8px">
+        <div class="field" style="flex:2"><label>Navn</label><input id="sp-name" placeholder="Fireball…"/></div>
+        <div class="field"><label>Niveau</label><select id="sp-level"><option value="0">Cantrip</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></div>
+        <div class="field"><label>Skole</label><input id="sp-school" placeholder="Evocation…" style="width:90px"/></div>
+        <button class="btn btn-gold btn-sm" onclick="addSpellToChar()" style="align-self:flex-end">+</button>
+      </div>
+      <div id="spell-list-editor"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuller</button>
+      <button class="btn btn-gold" onclick="saveCharacter()">Gem Karakter</button>
+    </div>
+  </div>
+</div>
+
+<div id="levelup-overlay" onclick="if(event.target===this)closeLevelUp()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:600;align-items:center;justify-content:center">
+  <div style="background:linear-gradient(145deg,#1a1208,#0e0a04);border:2px solid var(--gold-d);border-radius:8px;width:min(480px,92vw);max-height:80vh;overflow-y:auto;padding:24px;position:relative;box-shadow:0 0 60px rgba(0,0,0,.8)">
+    <button class="modal-close" onclick="closeLevelUp()">✕</button>
+    <div style="font-family:'Cinzel Decorative',serif;font-size:16px;color:var(--gold);margin-bottom:4px" id="lu-title">Level Up</div>
+    <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-d);letter-spacing:2px;margin-bottom:16px" id="lu-sub">Nye evner</div>
+    <div id="lu-abilities" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeLevelUp()">Annuller</button>
+      <button class="btn btn-gold" onclick="confirmLevelUp()">⬆ Level Up!</button>
+    </div>
+  </div>
+</div>
+
+<div id="spell-toast">
+  <button class="toast-close" onclick="closeToast()">✕</button>
+  <div class="toast-title">⏰ Trylleformular Udløbet</div>
+  <div class="toast-body" id="toast-body">—</div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://twumymktiidjqviycozz.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3dW15bWt0aWlkanF2aXljb3p6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODcwNDYsImV4cCI6MjA5NDM2MzA0Nn0.CoKy5k3-0QaFVu6QjI9x8u2dn9lBQAjlPaCtglvK1gY";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const CAT_ORDER  = ["Bevægelse","Angreb","Reaktion","Diverse"];
+const CAT_COLORS = {
+  "Bevægelse":{text:"#d4a87a",border:"rgba(212,168,122,.45)",bg:"rgba(212,168,122,.09)"},
+  "Angreb":   {text:"#c9a84c",border:"rgba(201,168,76,.45)", bg:"rgba(201,168,76,.09)"},
+  "Reaktion": {text:"#c47ad4",border:"rgba(196,122,212,.45)",bg:"rgba(196,122,212,.09)"},
+  "Diverse":  {text:"#7ab8d4",border:"rgba(122,184,212,.45)",bg:"rgba(122,184,212,.09)"},
+};
+const AP = {
+  player:[
+    {label:"Bevæg dig",category:"Bevægelse",desc:"Op til din fulde hastighed."},
+    {label:"Sprint",category:"Bevægelse",desc:"Handling: fordobl hastighed. Kan ikke angribe."},
+    {label:"Tilbagetræk",category:"Bevægelse",desc:"Handling: ingen muligheds­angreb. Kan ikke angribe."},
+    {label:"Rejs dig op",category:"Bevægelse",desc:"Koster ½ hastighed fra liggende."},
+    {label:"Angreb",category:"Angreb",desc:"Foretag ét eller flere angreb."},
+    {label:"Bonusangreb",category:"Angreb",desc:"Ekstra angreb som bonushandling — kræver klassevne."},
+    {label:"Muligheds­angreb",category:"Reaktion",desc:"Angrib fjende der forlader melee uden Tilbagetræk."},
+    {label:"Forberedt handling",category:"Reaktion",desc:"Udfør forberedt handling på trigger."},
+    {label:"Hjælp",category:"Diverse",desc:"Giv allieret fordel på angreb eller færdighed."},
+    {label:"Undvige",category:"Diverse",desc:"Angreb mod dig har ulempe; Smi-redninger giver fordel."},
+    {label:"Gemme sig",category:"Diverse",desc:"Snigeadfærd — kræver dækning."},
+    {label:"Forbered handling",category:"Diverse",desc:"Vælg handling + trigger, udløses som reaktion."},
+    {label:"Bruge genstand",category:"Diverse",desc:"Brug trylleflaske, rulle eller item."},
+    {label:"Grib",category:"Diverse",desc:"Styrke (Atletik) mod Atletik/Akrobatik."},
+    {label:"Skub/Stød",category:"Diverse",desc:"Slå fjende omkuld eller skub 1,5m væk."},
+    {label:"Søge",category:"Diverse",desc:"Opfattelse eller Undersøgelse aktivt."},
+    {label:"Improviser",category:"Diverse",desc:"Alt GM godkender."},
+  ],
+  monster:[
+    {label:"Bevæg dig",category:"Bevægelse",desc:"Op til monstrets fulde hastighed."},
+    {label:"Angreb",category:"Angreb",desc:"Standardangreb."},
+    {label:"Multiangreb",category:"Angreb",desc:"To eller flere angreb (se stat block)."},
+    {label:"Muligheds­angreb",category:"Reaktion",desc:"Angrib fjende der forlader melee."},
+    {label:"Særlig evne",category:"Diverse",desc:"Monstrets unikke evne."},
+    {label:"Trylleformular",category:"Diverse",desc:"Cast fra stat block."},
+    {label:"Tilbagetræk",category:"Diverse",desc:"Bevæg dig uden muligheds­angreb."},
+    {label:"Undvige",category:"Diverse",desc:"Angreb har ulempe; Smi-redninger giver fordel."},
+  ],
+  npc:[
+    {label:"Bevæg dig",category:"Bevægelse",desc:"Op til NPC'ens hastighed."},
+    {label:"Angreb",category:"Angreb",desc:"Simpelt angreb."},
+    {label:"Muligheds­angreb",category:"Reaktion",desc:"Angrib fjende der forlader melee."},
+    {label:"Hjælp",category:"Diverse",desc:"Hjælp en allieret."},
+    {label:"Flygt",category:"Diverse",desc:"Sprint + Tilbagetræk."},
+    {label:"Overtal",category:"Diverse",desc:"Karisma (Overtalelse)."},
+    {label:"Skræm",category:"Diverse",desc:"Karisma (Intimidation) mod Visdom."},
+  ],
+};
+const SKILLS=[
+  {name:"Atletik",stat:"STR"},{name:"Akrobatik",stat:"DEX"},{name:"Snigeadfærd",stat:"DEX"},
+  {name:"Sleight of Hand",stat:"DEX"},{name:"Arkanom",stat:"INT"},{name:"Historie",stat:"INT"},
+  {name:"Undersøgelse",stat:"INT"},{name:"Natur",stat:"INT"},{name:"Religion",stat:"INT"},
+  {name:"Dyrekundskab",stat:"WIS"},{name:"Indsigt",stat:"WIS"},{name:"Medicin",stat:"WIS"},
+  {name:"Opfattelse",stat:"WIS"},{name:"Overlevelse",stat:"WIS"},{name:"Bedrageri",stat:"CHA"},
+  {name:"Intimidation",stat:"CHA"},{name:"Optræden",stat:"CHA"},{name:"Overtalelse",stat:"CHA"},
+];
+const STAT_NAMES=["STR","DEX","CON","INT","WIS","CHA"];
+
+let combat={phase:"idle",combatants:[],currentIndex:0,round:1,elapsedSeconds:0,lastTickAt:null,log:[],spellTimers:[]};
+let characters=[],currentView="gm",editingCharId=null,timerInterval=null;
+let modalSpellSlots=[0,0,0,0,0,0,0,0,0],modalSpells=[];
+let MONSTERS=[],CLASS_ABILITIES={};
+let pendingLevelUpCharId=null,pendingNewLevel=1;
+let monsterMatches=[],monsterHighlight=-1;
+let saving=false;
+
+const uid=()=>Math.random().toString(36).slice(2,8);
+const fmt=s=>`${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const mod=v=>{const m=Math.floor((v-10)/2);return(m>=0?"+":"")+m;};
+const hpColor=p=>p>60?"#4a9a4a":p>30?"#c9a84c":"#8b1a1a";
+const typeLabel=t=>t==="player"?"Spiller":t==="monster"?"Monster":"NPC";
+
+async function loadData(){
+  try{
+    const[mR,aR]=await Promise.all([fetch("monsters.json"),fetch("abilities.json")]);
+    if(mR.ok)MONSTERS=await mR.json();
+    if(aR.ok)CLASS_ABILITIES=await aR.json();
+  }catch(e){console.warn("JSON ikke loadet:",e);}
+}
+
+async function loadFromSupabase(){
+  try{
+    const{data:cs}=await sb.from("combat_state").select("state").eq("id",1).single();
+    if(cs?.state){combat=cs.state;if(combat.phase==="combat"&&!timerInterval)startTimer();}
+    const{data:chars}=await sb.from("characters").select("id,name,data").order("name");
+    if(chars)characters=chars.map(r=>({id:r.id,name:r.name,...r.data}));
+  }catch(e){console.warn("Load fejl:",e);}
+}
+
+async function saveCombat(){
+  if(saving)return;saving=true;
+  try{await sb.from("combat_state").upsert({id:1,state:combat,updated:new Date().toISOString()});}
+  catch(e){console.warn("Save fejl:",e);}
+  finally{saving=false;}
+}
+
+async function saveCharToSB(char){
+  const{id,name,...data}=char;
+  await sb.from("characters").upsert({id,name,data,updated:new Date().toISOString()});
+}
+async function deleteCharFromSB(id){await sb.from("characters").delete().eq("id",id);}
+
+function subscribeRealtime(){
+  sb.channel("tracker")
+    .on("postgres_changes",{event:"*",schema:"public",table:"combat_state"},p=>{
+      if(p.new?.state){
+        combat=p.new.state;
+        if(combat.phase==="combat"&&!timerInterval)startTimer();
+        if(combat.phase!=="combat")stopTimer();
+        render();
+      }
+    })
+    .on("postgres_changes",{event:"*",schema:"public",table:"characters"},async()=>{
+      const{data}=await sb.from("characters").select("id,name,data").order("name");
+      if(data)characters=data.map(r=>({id:r.id,name:r.name,...r.data}));
+      renderCharList();renderCharSelect();
+    })
+    .subscribe(s=>{
+      const el=document.getElementById("ws-status");
+      if(s==="SUBSCRIBED"){el.textContent="Forbundet";el.className="connected";}
+      else{el.textContent="Forbinder…";el.className="disconnected";}
+    });
+}
+
+function startTimer(){
+  if(timerInterval)return;
+  combat.lastTickAt=Date.now();
+  timerInterval=setInterval(()=>{
+    if(combat.phase!=="combat")return;
+    const now=Date.now(),delta=combat.lastTickAt?Math.round((now-combat.lastTickAt)/1000):1;
+    combat.elapsedSeconds+=delta;combat.lastTickAt=now;
+    document.getElementById("timer-display").textContent=fmt(combat.elapsedSeconds);
+    document.getElementById("pv-timer").textContent=fmt(combat.elapsedSeconds);
+  },1000);
+}
+function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
+
+function setView(v){
+  currentView=v;
+  document.getElementById("gm-view").style.display=v==="gm"?"grid":"none";
+  document.getElementById("player-view").style.display=v==="player"?"flex":"none";
+  document.querySelectorAll(".view-btn").forEach((b,i)=>b.classList.toggle("active",(i===0&&v==="gm")||(i===1&&v==="player")));
+  updateFullscreenBtn();
+  render();
+}
+
+function render(){renderInitList();renderSpellTimers();if(currentView==="gm")renderGM();if(currentView==="player")renderPlayer();}
+
+function renderInitList(){
+  const el=document.getElementById("init-list");
+  const bs=document.getElementById("btn-start"),be=document.getElementById("btn-end");
+  if(!combat.combatants?.length){el.innerHTML='<div class="empty-msg">Ingen kombattanter</div>';}
+  else{
+    el.innerHTML=combat.combatants.map((c,i)=>{
+      const isA=combat.phase==="combat"&&i===combat.currentIndex;
+      const isDead=c.dead||(c.dst?.dead);
+      const pct=c.maxHp?Math.round((c.hp/c.maxHp)*100):null;
+      const dstInfo=c.dst&&!c.dst.stable&&!c.dst.dead?` · <span style="color:#c0392b">☠ DST ${c.dst.successes}✓ ${c.dst.failures}✗</span>`
+        :c.dst?.stable?` · <span style="color:#4a9a4a">✦ Stabil</span>`
+        :c.dst?.dead?` · <span style="color:#8b1a1a">☠ Død</span>`:"";
+      return`<div class="init-item${isA?" active":""}" style="${isDead?"opacity:.35;filter:grayscale(.8)":""}">
+        <div class="init-num">
+          <input type="number" value="${c.initiative}"
+            style="width:36px;background:transparent;border:none;border-bottom:1px solid var(--gold-d);color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:14px;text-align:center;outline:none;padding:0"
+            onchange="changeInitiative('${c.id}',this.value)"
+            onclick="event.stopPropagation()"/>
+        </div>
+        <div class="init-info">
+          <div class="init-name">${esc(c.name)}${isDead?' <span style="font-size:10px;color:#8b1a1a">☠</span>':""}</div>
+          <div class="init-type t-${c.type}">${typeLabel(c.type)}${c.ac?` · AC ${c.ac}`:""}${dstInfo}</div>
+          ${c.maxHp?`<div class="hp-bar"><div class="hp-fill" style="width:${pct}%;background:${hpColor(pct)}"></div></div>
+          <div class="hp-text">${c.hp}/${c.maxHp} HP</div>
+          ${!isDead?`<div class="hp-row">
+            <input class="hp-input" id="hpd-${c.id}" type="number" placeholder="±"/>
+            <button class="btn btn-blood btn-xs" onclick="applyHp('${c.id}',-1)">Damage</button>
+            <button class="btn btn-gold btn-xs" onclick="applyHp('${c.id}',+1)">Healing</button>
+            ${c.hp===0&&c.type==="player"?`<button class="btn btn-xs" onclick="openDST('${c.id}')" style="background:rgba(139,26,26,.4);border:1px solid #8b1a1a;color:#ffbaba;font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px">☠ DST</button>`:""}
+          </div>`:`<div class="hp-row">
+            <button class="btn btn-gold btn-xs" onclick="revive('${c.id}')">↺ Genopliv</button>
+          </div>`}`:""}
+          ${c.type!=="player"?`<div style="margin-top:4px">
+            <button class="btn btn-xs btn-ghost" onclick="toggleDead('${c.id}')" style="font-size:8px;padding:2px 6px">${isDead?"↺ Genopliv":"☠ Markér død"}</button>
+          </div>`:""}
+        </div>
+        <button class="init-remove" onclick="removeCombatant('${c.id}')">✕</button>
+      </div>`;
+    }).join("");
+  }
+  const ic=combat.phase==="combat";
+  bs.style.display=ic?"none":"block";be.style.display=ic?"block":"none";
+  bs.disabled=!combat.combatants?.length;
+}
+
+function renderGM(){
+  const ic=combat.phase==="combat";
+  document.getElementById("gm-idle").style.display=ic?"none":"flex";
+  document.getElementById("gm-combat").style.display=ic?"flex":"none";
+  if(!ic)return;
+  const c=combat.combatants[combat.currentIndex];
+  document.getElementById("round-num").textContent=combat.round;
+  document.getElementById("active-name").textContent=c?c.name:"—";
+  document.getElementById("timer-display").textContent=fmt(combat.elapsedSeconds);
+  document.getElementById("ct-name").textContent=c?c.name:"—";
+  document.getElementById("gm-buckets").innerHTML=c?renderBuckets(c,true):"";
+  document.getElementById("log-box").innerHTML=(combat.log||[]).map(e=>`<div class="log-entry">${e}</div>`).join("");
+}
+
+function renderPlayer(){
+  const ic=combat.phase==="combat";
+  document.getElementById("pv-idle").style.display=ic?"none":"flex";
+  document.getElementById("pv-combat").style.display=ic?"flex":"none";
+  const pv=document.getElementById("player-view");
+  const skull=document.getElementById("pv-skull");
+  if(!ic){pv.className="pal-idle";skull.style.opacity="0";return;}
+  const c=combat.combatants[combat.currentIndex],type=c?.type||"player";
+  pv.className=`pal-${type}`;
+  // Show skull on monster/npc turns, hide on player turns
+  skull.style.opacity=type==="player"?"0":"0.18";
+  const pal=type==="player"?{a:"var(--pl-accent-l)",d:"var(--pl-dim)"}
+    :type==="monster"?{a:"var(--mo-accent-l)",d:"var(--mo-dim)"}
+    :{a:"var(--np-accent-l)",d:"var(--np-dim)"};
+  const s=(id,prop,val)=>{const el=document.getElementById(id);if(el)el.style[prop]=val;};
+  const t=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  s("pv-round","color",pal.d);t("pv-round",`— Runde ${combat.round} —`);
+  s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 30px ${pal.a}66`);t("pv-name",c?c.name:"—");
+  s("pv-timer","color",pal.d);s("pv-timer-label","color",pal.d);
+  s("pv-order-title","color",pal.d);s("pv-whose","color",pal.d);
+  t("pv-timer",fmt(combat.elapsedSeconds));
+  document.getElementById("pv-card").className=`pv-card pal-${type}`;
+  const sub=document.getElementById("pv-sub");
+  sub.style.color=pal.d;
+  if(c?.charId){const ch=characters.find(x=>x.id===c.charId);sub.textContent=ch?.class?`${ch.class}${ch.level?" · Level "+ch.level:""}`:typeLabel(type);}
+  else sub.textContent=typeLabel(type);
+  document.getElementById("pv-order-list").innerHTML=(combat.combatants||[]).map((x,i)=>{
+    const cur=i===combat.currentIndex;
+    const dstBadge=x.dst&&!x.dst.stable&&!x.dst.dead?` <span style="color:#c0392b;font-size:10px">☠ DST</span>`:x.dst?.stable?` <span style="color:#4a9a4a;font-size:10px">✦ Stabil</span>`:x.dst?.dead?` <span style="color:#8b1a1a;font-size:10px">☠ Død</span>`:"";
+    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}">
+      <div class="pv-order-num" style="color:${pal.d}">${x.initiative}</div>
+      <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${dstBadge}</div>
+      ${cur?`<span style="color:${pal.a};font-size:10px">◀</span>`:""}
+    </div>`;
+  }).join("");
+}
+
+function renderBuckets(cb,isGM){
+  return CAT_ORDER.map(cat=>{
+    const col=CAT_COLORS[cat];
+    const chips=(cb.actions||[]).map((a,i)=>({...a,idx:i})).filter(a=>(a.category||"Diverse")===cat);
+    const ch=!chips.length?`<div style="color:var(--text-d);font-size:10px;font-style:italic">—</div>`
+      :chips.map(a=>{
+        const u=a.used?"used":"",st=`color:${col.text};border-color:${col.border};background:${a.used?"transparent":col.bg}`;
+        return isGM?`<button class="action-chip ${u}" style="${st}" onclick="toggleAction(${a.idx})" ${a.used?"disabled":""}>${esc(a.label)}${a.desc?`<span class="tip">${esc(a.desc)}</span>`:""}</button>`
+          :`<div class="pv-chip ${u}" style="${st}">${esc(a.label)}</div>`;
+      }).join("");
+    const wC=isGM?"action-bucket":"pv-bucket",hC=isGM?"bucket-header":"pv-bucket-header",cC=isGM?"bucket-chips":"pv-bucket-chips";
+    return`<div class="${wC}" style="border-color:${col.border}"><div class="${hC}" style="color:${col.text}"><span class="bucket-dot" style="background:${col.text}"></span>${cat}</div><div class="${cC}">${ch}</div></div>`;
+  }).join("");
+}
+
+function renderCharList(){
+  const el=document.getElementById("char-list");
+  if(!characters.length){el.innerHTML='<div class="empty-msg">Ingen gemte karakterer</div>';return;}
+  el.innerHTML=characters.map(c=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:7px 8px;background:var(--ink);border:1px solid var(--gold-d);border-radius:3px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</div>
+        <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--text-d);letter-spacing:1px">${esc(c.class||"")} Lv${c.level||1} · HP ${c.maxHp||"—"} · AC ${c.ac||"—"}</div>
+      </div>
+      <button class="btn btn-ghost btn-xs" title="Level Up" onclick="openLevelUp('${c.id}')" style="font-size:13px;padding:4px 6px">⚙</button>
+      <button class="btn btn-ghost btn-xs" onclick="openModal('${c.id}')">✎</button>
+      <button class="init-remove" onclick="deleteChar('${c.id}')">✕</button>
+    </div>`).join("");
+}
+
+function renderCharSelect(){
+  const sel=document.getElementById("char-select"),cur=sel.value;
+  sel.innerHTML='<option value="">— Vælg —</option>'+characters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  if(cur)sel.value=cur;
+}
+
+function renderSpellTimers(){
+  const el=document.getElementById("spell-timer-list");
+  if(!combat.spellTimers?.length){el.innerHTML='<div class="empty-msg" style="font-size:11px">Ingen aktive timere</div>';return;}
+  el.innerHTML=combat.spellTimers.map((t,i)=>{
+    const u=t.roundsLeft<=1,col=u?"#c0392b":"var(--gold-d)";
+    return`<div class="spell-timer-card${u?" urgent":""}" style="border-color:${col};color:${col}">
+      <div style="flex:1"><div class="spell-name">${esc(t.name)}</div><div class="spell-caster">Kaster: ${esc(t.caster)}</div></div>
+      <div style="text-align:center">
+        <div class="spell-rounds" style="color:${u?"#c0392b":"var(--gold-l)"}">${t.roundsLeft}</div>
+        <div class="spell-rounds-label">runde${t.roundsLeft===1?"":"r"} tilbage</div>
+      </div>
+      <button class="spell-remove" onclick="removeSpellTimer(${i})">✕</button>
+    </div>`;
+  }).join("");
+}
+
+// Monster autocomplete
+function onMonsterSearch(val){
+  const dd=document.getElementById("monster-dropdown");
+  if(!val.trim()){dd.style.display="none";monsterMatches=[];return;}
+  monsterMatches=MONSTERS.filter(m=>m.name.toLowerCase().includes(val.toLowerCase())).slice(0,10);
+  if(!monsterMatches.length){dd.style.display="none";return;}
+  monsterHighlight=-1;dd.style.display="block";
+  dd.innerHTML=monsterMatches.map((m,i)=>`<div class="monster-opt" onclick="selectMonster(${i})" style="padding:7px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid rgba(255,255,255,.05)"><span style="color:var(--gold)">${esc(m.name)}</span><span style="color:var(--text-d);font-family:'Cinzel',serif;font-size:9px;margin-left:8px">CR${m.cr} · AC${m.ac} · ${m.hp}HP</span></div>`).join("");
+}
+function onMonsterKey(e){
+  const dd=document.getElementById("monster-dropdown");if(dd.style.display==="none")return;
+  const opts=dd.querySelectorAll(".monster-opt");
+  if(e.key==="ArrowDown"){monsterHighlight=Math.min(monsterHighlight+1,opts.length-1);opts.forEach((o,i)=>o.style.background=i===monsterHighlight?"rgba(201,168,76,.15)":"");e.preventDefault();}
+  else if(e.key==="ArrowUp"){monsterHighlight=Math.max(monsterHighlight-1,-1);opts.forEach((o,i)=>o.style.background=i===monsterHighlight?"rgba(201,168,76,.15)":"");e.preventDefault();}
+  else if(e.key==="Enter"&&monsterHighlight>=0){selectMonster(monsterHighlight);e.preventDefault();}
+  else if(e.key==="Escape")dd.style.display="none";
+}
+function selectMonster(i){
+  const m=monsterMatches[i];if(!m)return;
+  document.getElementById("f-name").value=m.name;
+  document.getElementById("f-hp").value=m.hp;
+  document.getElementById("f-ac").value=m.ac;
+  document.getElementById("f-type").value="monster";
+  const saves=Object.entries(m.saves||{});
+  const se=document.getElementById("f-saves-display");
+  if(saves.length){se.style.display="block";se.textContent="Saves: "+saves.map(([k,v])=>`${k} ${v}`).join(" · ");}
+  else se.style.display="none";
+  document.getElementById("monster-search").value="";
+  document.getElementById("monster-dropdown").style.display="none";
+  document.getElementById("monster-search")._sel=m;
+  document.getElementById("f-init").focus();
+}
+
+// Combat
+function addFromChar(){
+  const id=document.getElementById("char-select").value;
+  const init=parseInt(document.getElementById("char-init-input").value);
+  if(!id||isNaN(init))return;
+  const char=characters.find(c=>c.id===id);if(!char)return;
+  const base=AP.player.map(a=>({...a,used:false}));
+  if(char.extraActions)char.extraActions.split(",").map(s=>s.trim()).filter(Boolean).forEach(l=>base.push({label:l,category:"Diverse",desc:"",used:false}));
+  if(!combat.combatants)combat.combatants=[];
+  combat.combatants.push({id:uid(),name:char.name,initiative:init,type:"player",hp:char.maxHp,maxHp:char.maxHp,ac:char.ac,charId:char.id,actions:base});
+  combat.combatants.sort((a,b)=>b.initiative-a.initiative);
+  document.getElementById("char-init-input").value="";document.getElementById("char-select").value="";
+  saveCombat();render();
+}
+
+function addManual(){
+  const name=document.getElementById("f-name").value.trim();
+  const init=parseInt(document.getElementById("f-init").value);
+  const type=document.getElementById("f-type").value;
+  const hp=parseInt(document.getElementById("f-hp").value)||null;
+  const ac=parseInt(document.getElementById("f-ac").value)||null;
+  const count=Math.max(1,Math.min(20,parseInt(document.getElementById("f-count").value)||1));
+  if(!name||isNaN(init))return;
+  const se=document.getElementById("monster-search"),sel=se._sel;
+  const baseActions=(sel&&sel.name===name&&type==="monster")
+    ?sel.actions.map(a=>({...a,used:false}))
+    :(AP[type]||AP.monster).map(a=>({...a,used:false}));
+  if(sel&&sel.name===name)se._sel=null;
+  if(!combat.combatants)combat.combatants=[];
+  for(let i=0;i<count;i++){
+    const label=count>1?`${name} ${i+1}`:name;
+    // Slightly vary initiative for groups (same roll, small offset keeps order readable)
+    const initVal=count>1?init-i:init;
+    combat.combatants.push({id:uid(),name:label,initiative:initVal,type,hp,maxHp:hp,ac,actions:baseActions.map(a=>({...a}))});
+  }
+  combat.combatants.sort((a,b)=>b.initiative-a.initiative);
+  ["f-name","f-init","f-hp","f-ac"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("f-count").value="1";
+  document.getElementById("f-saves-display").style.display="none";
+  saveCombat();render();
+}
+
+function changeInitiative(id, val){
+  const init=parseInt(val);
+  if(isNaN(init))return;
+  combat.combatants=combat.combatants.map(c=>c.id===id?{...c,initiative:init}:c);
+  // Re-sort and fix currentIndex
+  const activeId=combat.combatants[combat.currentIndex]?.id;
+  combat.combatants.sort((a,b)=>b.initiative-a.initiative);
+  if(activeId)combat.currentIndex=Math.max(0,combat.combatants.findIndex(c=>c.id===activeId));
+  saveCombat();render();
+}
+
+function toggleDead(id){
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id)return c;
+    const nowDead=!c.dead;
+    combat.log=[nowDead
+      ?`☠ <strong>${esc(c.name)}</strong> er død og springer over i rækkefølgen.`
+      :`↺ <strong>${esc(c.name)}</strong> er genoplivet!`,
+      ...(combat.log||[]).slice(0,49)];
+    return{...c,dead:nowDead,hp:nowDead?0:c.hp};
+  });
+  // If current combatant just died, advance
+  const cur=combat.combatants[combat.currentIndex];
+  if(cur?.dead)advanceToNext();
+  saveCombat();render();
+}
+
+function revive(id){
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id)return c;
+    combat.log=[`↺ <strong>${esc(c.name)}</strong> er genoplivet!`,...(combat.log||[]).slice(0,49)];
+    return{...c,dead:false,dst:null,hp:1};
+  });
+  saveCombat();render();
+}
+
+function advanceToNext(){
+  const alive=combat.combatants.filter(c=>!c.dead&&!c.dst?.dead);
+  if(!alive.length)return;
+  let idx=(combat.currentIndex+1)%combat.combatants.length;
+  let safety=0;
+  while((combat.combatants[idx]?.dead||combat.combatants[idx]?.dst?.dead)&&safety<combat.combatants.length){
+    idx=(idx+1)%combat.combatants.length;safety++;
+  }
+  combat.currentIndex=idx;
+}
+
+function removeCombatant(id){
+  combat.combatants=combat.combatants.filter(c=>c.id!==id);
+  combat.currentIndex=Math.min(combat.currentIndex,Math.max(0,combat.combatants.length-1));
+  saveCombat();render();
+}
+
+function isDying(c){return c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead;}
+function isOutOfFight(c){return c.dead||c.dst?.dead||(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead);}
+
+function applyHp(id,sign){
+  const inp=document.getElementById(`hpd-${id}`);
+  const delta=Math.abs(parseInt(inp?.value)||0)*sign;if(!delta)return;
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id)return c;
+    const newHp=Math.max(0,Math.min(c.maxHp||9999,(c.hp||0)+delta));
+    // Healing clears DST and revives dead
+    if(delta>0){return{...c,hp:newHp,dst:null,dead:false};}
+    // Damage: trigger DST if player hits 0
+    let dst=c.dst;
+    if(newHp===0&&c.type==="player"&&!dst){
+      dst={successes:0,failures:0,stable:false,dead:false};
+    }
+    return{...c,hp:newHp,dst};
+  });
+  const c=combat.combatants.find(x=>x.id===id);
+  combat.log=[delta>0
+    ?`💚 <strong>${esc(c.name)}</strong> healed ${delta} → ${c.hp} HP`
+    :`💔 <strong>${esc(c.name)}</strong> took ${Math.abs(delta)} damage → ${c.hp} HP`,
+    ...(combat.log||[]).slice(0,49)];
+  if(inp)inp.value="";
+  // If current active player just hit 0, open DST and advance turn
+  if(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead){
+    combat.log=[`☠ <strong>${esc(c.name)}</strong> er nede! Death Saving Throws!`,...combat.log.slice(0,49)];
+    saveCombat();render();
+    openDST(id);
+    // Auto-advance past dying player
+    if(combat.currentIndex===combat.combatants.findIndex(x=>x.id===id)){
+      setTimeout(()=>{advanceToNext();saveCombat();render();},300);
+    }
+  } else {
+    saveCombat();render();
+  }
+}
+
+// ── Death Saving Throws ───────────────────────────────────────────────────
+function openDST(id){
+  const c=combat.combatants.find(x=>x.id===id);if(!c||!c.dst)return;
+  document.getElementById("dst-name").textContent=c.name;
+  renderDSTpips(c.dst);
+  document.getElementById("dst-overlay").style.display="flex";
+  document.getElementById("dst-overlay").dataset.id=id;
+}
+
+function closeDST(){document.getElementById("dst-overlay").style.display="none";}
+
+function renderDSTpips(dst){
+  const pip=(filled,color)=>`<span style="display:inline-block;width:18px;height:18px;border-radius:50%;border:2px solid ${color};background:${filled?color:"transparent"};margin:0 3px;transition:all .2s"></span>`;
+  document.getElementById("dst-successes").innerHTML=
+    [0,1,2].map(i=>pip(i<dst.successes,"#4a9a4a")).join("");
+  document.getElementById("dst-failures").innerHTML=
+    [0,1,2].map(i=>pip(i<dst.failures,"#c0392b")).join("");
+  const msg=document.getElementById("dst-msg");
+  if(dst.stable){msg.textContent="✦ Stabil — karakteren er i sikkerhed.";msg.style.color="#4a9a4a";}
+  else if(dst.dead){msg.textContent="☠ Karakteren er død.";msg.style.color="#c0392b";}
+  else{msg.textContent="";msg.style.color="var(--text-d)";}
+}
+
+function dstRoll(success){
+  const id=document.getElementById("dst-overlay").dataset.id;
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id||!c.dst)return c;
+    let{successes,failures,stable,dead}=c.dst;
+    if(stable||dead)return c;
+    if(success){successes=Math.min(3,successes+1);}
+    else{failures=Math.min(3,failures+1);}
+    if(successes>=3)stable=true;
+    if(failures>=3)dead=true;
+    return{...c,dst:{successes,failures,stable,dead}};
+  });
+  const c=combat.combatants.find(x=>x.id===id);
+  if(c?.dst){
+    const msg=c.dst.stable?`✦ <strong>${esc(c.name)}</strong> er stabil!`
+      :c.dst.dead?`☠ <strong>${esc(c.name)}</strong> er død!`
+      :success?`🎲 <strong>${esc(c.name)}</strong> DST success (${c.dst.successes}/3)`
+      :`🎲 <strong>${esc(c.name)}</strong> DST failure (${c.dst.failures}/3)`;
+    combat.log=[msg,...(combat.log||[]).slice(0,49)];
+    renderDSTpips(c.dst);
+    if(c.dst.stable||c.dst.dead){setTimeout(closeDST,1500);}
+  }
+  saveCombat();render();
+}
+
+function startCombat(){
+  if(!combat.combatants?.length)return;
+  combat={...combat,phase:"combat",currentIndex:0,round:1,elapsedSeconds:0,lastTickAt:Date.now(),
+    log:[`⚔ <strong>Kamp begyndt!</strong> Runde 1 — <strong>${esc(combat.combatants[0].name)}</strong> starter.`],
+    spellTimers:combat.spellTimers||[]};
+  startTimer();saveCombat();render();
+}
+
+function endCombat(){
+  stopTimer();
+  combat={phase:"idle",combatants:[],currentIndex:0,round:1,elapsedSeconds:0,lastTickAt:null,log:[],spellTimers:[]};
+  saveCombat();render();
+}
+
+function advanceToNext(){
+  if(!combat.combatants.length)return;
+  let idx=(combat.currentIndex+1)%combat.combatants.length;
+  let safety=0;
+  while(isOutOfFight(combat.combatants[idx])&&safety<combat.combatants.length){
+    idx=(idx+1)%combat.combatants.length;safety++;
+  }
+  combat.currentIndex=idx;
+}
+
+function nextTurn(){
+  combat.combatants=combat.combatants.map((c,i)=>i!==combat.currentIndex?c:{...c,actions:c.actions.map(a=>({...a,used:false}))});
+  const prevIdx=combat.currentIndex;
+  let nextIdx=(prevIdx+1)%combat.combatants.length;
+  let safety=0;
+  while(isOutOfFight(combat.combatants[nextIdx])&&safety<combat.combatants.length){
+    nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
+  }
+  combat.currentIndex=nextIdx;
+  // New round detection: wrapped around
+  if(nextIdx<=prevIdx){
+    combat.round++;
+    combat.spellTimers=(combat.spellTimers||[]).map(t=>({...t,roundsLeft:t.roundsLeft-1}));
+    combat.spellTimers.filter(t=>t.roundsLeft<=0).forEach(t=>showToast(t.name,t.caster));
+    combat.spellTimers=combat.spellTimers.filter(t=>t.roundsLeft>0);
+  }
+  const next=combat.combatants[combat.currentIndex];
+  combat.log=[nextIdx<=prevIdx
+    ?`🔔 <strong>Runde ${combat.round}</strong> begynder — <strong>${esc(next.name)}</strong> er aktiv.`
+    :`➡ <strong>${esc(next.name)}</strong>s tur.`,...(combat.log||[]).slice(0,49)];
+  saveCombat();render();
+}
+
+function skipTurn(){
+  const sk=combat.combatants[combat.currentIndex];
+  combat.log=[`⏭ <strong>${esc(sk.name)}</strong> springer over.`,...(combat.log||[]).slice(0,49)];
+  const prevIdx=combat.currentIndex;
+  let nextIdx=(prevIdx+1)%combat.combatants.length;
+  let safety=0;
+  while(isOutOfFight(combat.combatants[nextIdx])&&safety<combat.combatants.length){
+    nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
+  }
+  combat.currentIndex=nextIdx;
+  if(nextIdx<=prevIdx)combat.round++;
+  saveCombat();render();
+}
+
+function toggleAction(idx){
+  const c=combat.combatants[combat.currentIndex];if(!c)return;
+  combat.combatants=combat.combatants.map((x,i)=>i!==combat.currentIndex?x:{...x,actions:x.actions.map((a,j)=>j===idx?{...a,used:!a.used}:a)});
+  const a=combat.combatants[combat.currentIndex].actions[idx];
+  combat.log=[`${a.used?"✔":"↩"} <strong>${esc(c.name)}</strong> ${a.used?"bruger":"fortryder"}: ${esc(a.label)}`,...(combat.log||[]).slice(0,49)];
+  saveCombat();render();
+}
+
+function addSpellTimer(){
+  const name=document.getElementById("st-name").value.trim();
+  const caster=document.getElementById("st-caster").value.trim();
+  const dur=parseInt(document.getElementById("st-dur").value)||10;
+  if(!name)return;
+  if(!combat.spellTimers)combat.spellTimers=[];
+  combat.spellTimers.push({id:uid(),name,caster:caster||"Ukendt",duration:dur,roundsLeft:dur});
+  ["st-name","st-caster","st-dur"].forEach(id=>document.getElementById(id).value="");
+  saveCombat();renderSpellTimers();
+}
+function removeSpellTimer(idx){combat.spellTimers.splice(idx,1);saveCombat();renderSpellTimers();}
+
+// Character modal
+function openModal(id){
+  editingCharId=id;const char=id?characters.find(c=>c.id===id):null;
+  document.getElementById("modal-title").textContent=char?`Rediger: ${char.name}`:"Ny Karakter";
+  const g=(ei,v)=>{const el=document.getElementById(ei);if(el)el.value=v||"";};
+  g("m-name",char?.name);g("m-class",char?.class);g("m-race",char?.race);
+  g("m-level",char?.level||1);g("m-hp",char?.maxHp);g("m-ac",char?.ac);
+  g("m-initbonus",char?.initBonus||0);g("m-speed",char?.speed||30);
+  g("m-extra-actions",char?.extraActions||"");
+  const stats=char?.stats||{STR:10,DEX:10,CON:10,INT:10,WIS:10,CHA:10};
+  document.getElementById("modal-stats").innerHTML=STAT_NAMES.map(s=>`
+    <div class="stat-hex">
+      <div class="stat-hex-label">${s}</div>
+      <div class="stat-hex-shape">
+        <div class="stat-hex-val" id="sh-val-${s}">${stats[s]||10}</div>
+        <div class="stat-hex-mod" id="sh-mod-${s}">${mod(stats[s]||10)}</div>
+      </div>
+      <input type="number" id="sh-${s}" value="${stats[s]||10}" min="1" max="30"
+        style="width:44px;background:transparent;border:none;color:transparent;font-size:1px;outline:none;text-align:center"
+        oninput="updateStat('${s}',this.value)"/>
+    </div>`).join("");
+  const profs=char?.proficiencies||[];
+  document.getElementById("skills-grid").innerHTML=SKILLS.map(sk=>`
+    <div class="skill-row">
+      <input type="checkbox" id="sk-${sk.name}" ${profs.includes(sk.name)?"checked":""}/>
+      <label for="sk-${sk.name}">${sk.name}</label>
+      <span class="skill-bonus">${sk.stat}</span>
+    </div>`).join("");
+  modalSpellSlots=char?.spellSlots?[...char.spellSlots]:[0,0,0,0,0,0,0,0,0];
+  modalSpells=char?.spells?JSON.parse(JSON.stringify(char.spells)):[];
+  renderSpellSlotsEditor();renderSpellListEditor();
+  switchTab("basics");document.getElementById("modal-overlay").classList.add("open");
+}
+function closeModal(){document.getElementById("modal-overlay").classList.remove("open");editingCharId=null;}
+function switchTab(tab){
+  document.querySelectorAll(".tab-btn").forEach((b,i)=>b.classList.toggle("active",["basics","skills","spells"][i]===tab));
+  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.toggle("active",p.id===`tab-${tab}`));
+}
+function updateStat(s,val){
+  const v=Math.max(1,Math.min(30,parseInt(val)||10));
+  document.getElementById(`sh-val-${s}`).textContent=v;
+  document.getElementById(`sh-mod-${s}`).textContent=mod(v);
+}
+function renderSpellSlotsEditor(){
+  document.getElementById("spell-slots-editor").innerHTML=modalSpellSlots.map((max,i)=>`
+    <div class="spell-slot-row">
+      <div class="spell-slot-level">Niveau ${i+1}</div>
+      <input type="number" min="0" max="9" value="${max}"
+        style="width:44px;background:var(--ink);border:1px solid var(--gold-d);color:var(--text);padding:4px 6px;border-radius:3px;font-size:12px;outline:none;text-align:center"
+        oninput="modalSpellSlots[${i}]=parseInt(this.value)||0"/>
+      <span style="font-size:10px;color:var(--text-d);font-family:'Cinzel',serif">slots</span>
+    </div>`).join("");
+}
+function addSpellToChar(){
+  const name=document.getElementById("sp-name").value.trim();
+  if(!name)return;
+  modalSpells.push({name,level:parseInt(document.getElementById("sp-level").value)||0,school:document.getElementById("sp-school").value.trim()});
+  ["sp-name","sp-school"].forEach(id=>document.getElementById(id).value="");
+  renderSpellListEditor();
+}
+function removeSpellFromChar(idx){modalSpells.splice(idx,1);renderSpellListEditor();}
+function renderSpellListEditor(){
+  const el=document.getElementById("spell-list-editor");
+  if(!modalSpells.length){el.innerHTML='<div style="font-size:12px;color:var(--text-d);font-style:italic;padding:8px 0">Ingen trylleformularer endnu</div>';return;}
+  el.innerHTML=modalSpells.map((sp,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="flex:1;font-size:12px">${esc(sp.name)}</div>
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--text-d)">${sp.level===0?"Cantrip":"Niv. "+sp.level}${sp.school?" · "+esc(sp.school):""}</div>
+      <button class="init-remove" onclick="removeSpellFromChar(${i})">✕</button>
+    </div>`).join("");
+}
+async function saveCharacter(){
+  const name=document.getElementById("m-name").value.trim();if(!name){alert("Navn er påkrævet");return;}
+  const stats={};STAT_NAMES.forEach(s=>{stats[s]=parseInt(document.getElementById(`sh-${s}`).value)||10;});
+  const profs=SKILLS.filter(sk=>document.getElementById(`sk-${sk.name}`)?.checked).map(sk=>sk.name);
+  const char={id:editingCharId||uid(),name,
+    class:document.getElementById("m-class").value,
+    race:document.getElementById("m-race").value.trim(),
+    level:parseInt(document.getElementById("m-level").value)||1,
+    maxHp:parseInt(document.getElementById("m-hp").value)||null,
+    ac:parseInt(document.getElementById("m-ac").value)||null,
+    initBonus:parseInt(document.getElementById("m-initbonus").value)||0,
+    speed:parseInt(document.getElementById("m-speed").value)||30,
+    extraActions:document.getElementById("m-extra-actions").value.trim(),
+    stats,proficiencies:profs,spellSlots:modalSpellSlots,spells:modalSpells};
+  await saveCharToSB(char);
+  const idx=characters.findIndex(c=>c.id===char.id);
+  if(idx>=0)characters[idx]=char;else characters.push(char);
+  characters.sort((a,b)=>a.name.localeCompare(b.name));
+  renderCharList();renderCharSelect();closeModal();
+}
+async function deleteChar(id){
+  if(!confirm("Slet denne karakter permanent?"))return;
+  await deleteCharFromSB(id);
+  characters=characters.filter(c=>c.id!==id);renderCharList();renderCharSelect();
+}
+
+// Level up
+function openLevelUp(charId){
+  const char=characters.find(c=>c.id===charId);if(!char)return;
+  const nl=(char.level||1)+1;if(nl>20){alert("Allerede level 20!");return;}
+  pendingLevelUpCharId=charId;pendingNewLevel=nl;
+  const abilities=(CLASS_ABILITIES[char.class]||{})[String(nl)]||[];
+  document.getElementById("lu-title").textContent=`${char.name} — Level ${nl}`;
+  document.getElementById("lu-sub").textContent=char.class?`${char.class} · Nye evner`:"Nye evner";
+  document.getElementById("lu-abilities").innerHTML=!abilities.length
+    ?`<div style="color:var(--text-d);font-style:italic;font-size:13px">Ingen nye SRD evner på dette niveau.</div>`
+    :abilities.map(a=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:4px"><span style="color:var(--gold);font-size:16px;flex-shrink:0">✦</span><span style="font-size:13px;color:var(--text)">${esc(a)}</span></div>`).join("");
+  document.getElementById("levelup-overlay").style.display="flex";
+}
+function closeLevelUp(){document.getElementById("levelup-overlay").style.display="none";pendingLevelUpCharId=null;}
+async function confirmLevelUp(){
+  const char=characters.find(c=>c.id===pendingLevelUpCharId);if(!char)return;
+  const updated={...char,level:pendingNewLevel};
+  await saveCharToSB(updated);
+  const idx=characters.findIndex(c=>c.id===updated.id);if(idx>=0)characters[idx]=updated;
+  renderCharList();renderCharSelect();closeLevelUp();
+}
+
+// Toast
+let toastTimer=null;
+function showToast(spellName,casterName){
+  document.getElementById("toast-body").textContent=`${spellName} (${casterName}) er løbet ud!`;
+  document.getElementById("spell-toast").style.display="block";
+  clearTimeout(toastTimer);toastTimer=setTimeout(closeToast,7000);
+}
+function closeToast(){document.getElementById("spell-toast").style.display="none";}
+
+// ── Fullscreen + Wake Lock ────────────────────────────────────────────────
+let wakeLock=null;
+
+async function requestWakeLock(){
+  try{
+    if("wakeLock" in navigator){
+      wakeLock=await navigator.wakeLock.request("screen");
+    }
+  }catch(e){console.warn("Wake lock ikke tilgængeligt:",e);}
+}
+
+function releaseWakeLock(){
+  if(wakeLock){wakeLock.release();wakeLock=null;}
+}
+
+function toggleFullscreen(){
+  const pv=document.getElementById("player-view");
+  if(!document.fullscreenElement){
+    pv.requestFullscreen().catch(e=>console.warn("Fullscreen fejl:",e));
+    requestWakeLock();
+  } else {
+    document.exitFullscreen();
+    releaseWakeLock();
+  }
+}
+
+document.addEventListener("fullscreenchange",()=>{
+  const btn=document.getElementById("pv-fullscreen-btn");
+  btn.textContent=document.fullscreenElement?"✕":"⛶";
+});
+
+// Show fullscreen button when on player view
+function updateFullscreenBtn(){
+  const btn=document.getElementById("pv-fullscreen-btn");
+  btn.classList.toggle("visible",currentView==="player");
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+async function init(){
+  await loadData();
+  await loadFromSupabase();
+  subscribeRealtime();
+  renderCharList();renderCharSelect();
+  setView("gm");
+  if(combat.phase==="combat")startTimer();
+}
+init();
+</script>
+</body>
+</html>
