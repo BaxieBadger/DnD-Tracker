@@ -571,15 +571,17 @@ function subscribeRealtime(){
     });
 }
 
+function roundSeconds(){return (combat.round-1)*6;}
+
 function startTimer(){
+  // No real-time ticking needed — time is derived from round count
+  // Keep interval only to update display every second in case round changes
   if(timerInterval)return;
-  combat.lastTickAt=Date.now();
   timerInterval=setInterval(()=>{
     if(combat.phase!=="combat")return;
-    const now=Date.now(),delta=combat.lastTickAt?Math.round((now-combat.lastTickAt)/1000):1;
-    combat.elapsedSeconds+=delta;combat.lastTickAt=now;
-    document.getElementById("timer-display").textContent=fmt(combat.elapsedSeconds);
-    document.getElementById("pv-timer").textContent=fmt(combat.elapsedSeconds);
+    const secs=roundSeconds();
+    document.getElementById("timer-display").textContent=fmt(secs);
+    document.getElementById("pv-timer").textContent=fmt(secs);
   },1000);
 }
 function stopTimer(){clearInterval(timerInterval);timerInterval=null;}
@@ -648,7 +650,7 @@ function renderGM(){
   const c=combat.combatants[combat.currentIndex];
   document.getElementById("round-num").textContent=combat.round;
   document.getElementById("active-name").textContent=c?c.name:"—";
-  document.getElementById("timer-display").textContent=fmt(combat.elapsedSeconds);
+  document.getElementById("timer-display").textContent=fmt(roundSeconds());
   document.getElementById("ct-name").textContent=c?c.name:"—";
   document.getElementById("gm-buckets").innerHTML=c?renderBuckets(c,true):"";
   document.getElementById("log-box").innerHTML=(combat.log||[]).map(e=>`<div class="log-entry">${e}</div>`).join("");
@@ -673,7 +675,7 @@ function renderPlayer(){
   s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 40px ${pal.a}88`);t("pv-name",c?c.name:"—");
   s("pv-timer","color",pal.d);s("pv-timer-label","color",pal.d);
   s("pv-order-title","color",pal.d);s("pv-whose","color",pal.d);
-  t("pv-timer",fmt(combat.elapsedSeconds));
+  t("pv-timer",fmt(roundSeconds()));
   document.getElementById("pv-card").className=`pv-card pal-${type}`;
   const sub=document.getElementById("pv-sub");
   sub.style.color=pal.d;
