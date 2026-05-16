@@ -169,7 +169,8 @@ html{font-size:18px}
 .toast-close{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--text-d);cursor:pointer;font-size:14px}
 /* Player fullscreen */
 #player-view.fullscreen-mode{position:fixed;inset:0;z-index:400;overflow-y:auto}
-#pv-fullscreen-btn{position:fixed;bottom:16px;right:16px;z-index:450;background:rgba(0,0,0,.6);border:1px solid var(--gold-d);color:var(--gold-d);font-size:20px;width:44px;height:44px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center}
+#pv-fullscreen-btn{position:fixed;bottom:20px;right:20px;z-index:450;background:rgba(0,0,0,.7);border:2px solid var(--gold-d);color:var(--gold);font-size:22px;width:52px;height:52px;border-radius:50%;cursor:pointer;display:none;align-items:center;justify-content:center;transition:all .2s}
+#pv-fullscreen-btn:hover{border-color:var(--gold);background:rgba(0,0,0,.9)}
 #pv-fullscreen-btn.visible{display:flex}
 </style>
 </head>
@@ -238,16 +239,18 @@ html{font-size:18px}
           <div id="active-name" style="font-family:'Cinzel Decorative',serif;font-size:13px;color:var(--gold-d)">—</div>
           <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text-d)">Aktiv</div>
         </div>
-        <div class="combat-timer"><span>Tid</span><span id="timer-display">00:00</span></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div class="combat-timer"><span>Tid</span><span id="timer-display">00:00</span></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-gold btn-sm" onclick="nextTurn()">Næste Tur ➡</button>
+            <button class="btn btn-ghost btn-sm" onclick="skipTurn()">⏭ Spring Over</button>
+          </div>
+        </div>
       </div>
       <div class="current-turn-card">
         <div class="ct-label">⚔ Aktiv Tur</div>
         <div id="ct-name" class="ct-name">—</div>
         <div id="gm-buckets" class="action-buckets"></div>
-        <div class="ct-controls">
-          <button class="btn btn-gold" onclick="nextTurn()">Næste Tur ➡</button>
-          <button class="btn btn-ghost" onclick="skipTurn()">⏭ Spring Over</button>
-        </div>
       </div>
       <div>
         <div class="panel-title" style="margin-bottom:8px">Kamplog</div>
@@ -352,21 +355,22 @@ html{font-size:18px}
     <div style="position:relative;z-index:2">
       <div style="font-family:'Cinzel Decorative',serif;font-size:14px;letter-spacing:3px;text-transform:uppercase;color:#c0392b;margin-bottom:10px;text-shadow:0 0 20px rgba(192,57,43,.8)">Death Saving Throws</div>
       <div id="dst-name" style="font-family:'Cinzel Decorative',serif;font-size:28px;color:#e8d4b8;margin-bottom:24px;text-shadow:0 2px 8px rgba(0,0,0,.8)">—</div>
-      <div style="display:flex;justify-content:space-around;margin-bottom:24px">
-        <div>
-          <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4a9a4a;margin-bottom:10px">Successes</div>
+      <!-- Pips med labels UNDER cirklerne -->
+      <div style="display:flex;justify-content:space-around;margin-bottom:8px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
           <div id="dst-successes"></div>
+          <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#4a9a4a">Successes</div>
         </div>
-        <div style="font-size:40px;color:#8b1a1a;align-self:center;text-shadow:0 0 20px rgba(139,26,26,.8)">☠</div>
-        <div>
-          <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c0392b;margin-bottom:10px">Failures</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
           <div id="dst-failures"></div>
+          <div style="font-family:'Cinzel',serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#c0392b">Failures</div>
         </div>
       </div>
-      <div id="dst-msg" style="font-size:15px;font-style:italic;color:#d4b896;min-height:22px;margin-bottom:20px;text-shadow:0 1px 4px rgba(0,0,0,.8)"></div>
-      <div style="display:flex;gap:12px;justify-content:center">
+      <div id="dst-msg" style="font-size:15px;font-style:italic;color:#d4b896;min-height:22px;margin:16px 0;text-shadow:0 1px 4px rgba(0,0,0,.8)"></div>
+      <!-- Knapper kun synlige for GM (skjult på spiller-siden via CSS-class) -->
+      <div id="dst-buttons" style="display:flex;gap:12px;justify-content:center">
         <button class="btn btn-blood" onclick="dstRoll(false)" style="flex:1;font-size:14px">✕ Failure</button>
-        <button class="btn btn-gold" onclick="dstRoll(true)" style="flex:1;font-size:14px">✓ Success</button>
+        <button class="btn btn-gold"  onclick="dstRoll(true)"  style="flex:1;font-size:14px">✓ Success</button>
       </div>
     </div>
     <button onclick="closeDST()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:20px;z-index:3">✕</button>
@@ -666,6 +670,14 @@ function renderPlayer(){
   const c=combat.combatants[combat.currentIndex],type=c?.type||"player";
   pv.className=`pal-${type}`;
   skull.style.opacity=type==="player"?"0":"0.18";
+
+  // Show DST on player view if active combatant is dying, hide otherwise
+  const dying=c&&isDying(c);
+  if(dying){
+    openDST(c.id, false); // no buttons on player side
+  } else {
+    closeDST();
+  }
   const pal=type==="player"?{a:"var(--pl-accent-l)",d:"var(--pl-dim)"}
     :type==="monster"?{a:"var(--mo-accent-l)",d:"var(--mo-dim)"}
     :{a:"var(--np-accent-l)",d:"var(--np-dim)"};
@@ -913,10 +925,11 @@ function applyHp(id,sign){
 }
 
 // ── Death Saving Throws ───────────────────────────────────────────────────
-function openDST(id){
+function openDST(id, showButtons=true){
   const c=combat.combatants.find(x=>x.id===id);if(!c||!c.dst)return;
   document.getElementById("dst-name").textContent=c.name;
   renderDSTpips(c.dst);
+  document.getElementById("dst-buttons").style.display=showButtons?"flex":"none";
   document.getElementById("dst-overlay").style.display="flex";
   document.getElementById("dst-overlay").dataset.id=id;
 }
@@ -1185,9 +1198,8 @@ function releaseWakeLock(){
 }
 
 function toggleFullscreen(){
-  const pv=document.getElementById("player-view");
   if(!document.fullscreenElement){
-    pv.requestFullscreen().catch(e=>console.warn("Fullscreen fejl:",e));
+    document.documentElement.requestFullscreen().catch(e=>console.warn("Fullscreen fejl:",e));
     requestWakeLock();
   } else {
     document.exitFullscreen();
@@ -1197,7 +1209,14 @@ function toggleFullscreen(){
 
 document.addEventListener("fullscreenchange",()=>{
   const btn=document.getElementById("pv-fullscreen-btn");
-  btn.textContent=document.fullscreenElement?"✕":"⛶";
+  if(btn) btn.textContent=document.fullscreenElement?"✕ Exit":"⛶ Fullscreen";
+});
+
+// Re-acquire wake lock if page becomes visible again
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"&&currentView==="player"){
+    requestWakeLock();
+  }
 });
 
 // Show fullscreen button when on player view
