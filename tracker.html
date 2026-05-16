@@ -262,11 +262,56 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
 </div>
 
 <div id="player-view" class="pal-idle">
-  <div id="pv-idle" style="text-align:center">
-    <div style="font-family:'Cinzel Decorative',serif;font-size:28px;color:var(--gold-d)">⚔ Venter på GM…</div>
-    <div style="font-size:16px;color:var(--text-d);margin-top:10px;font-style:italic">Kampen er ikke begyndt endnu.</div>
+  <!-- Skull background -->
+  <div id="pv-skull" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.5s">
+    <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="width:min(70vw,400px);height:auto;filter:drop-shadow(0 0 40px rgba(139,26,26,.6))">
+      <!-- Smoke wisps -->
+      <ellipse cx="100" cy="30" rx="60" ry="25" fill="rgba(80,20,20,.15)"/>
+      <ellipse cx="70" cy="20" rx="35" ry="18" fill="rgba(60,15,15,.12)"/>
+      <ellipse cx="130" cy="25" rx="40" ry="20" fill="rgba(60,15,15,.12)"/>
+      <ellipse cx="100" cy="10" rx="50" ry="15" fill="rgba(40,10,10,.1)"/>
+      <!-- Skull cranium -->
+      <ellipse cx="100" cy="90" rx="72" ry="68" fill="rgba(15,5,5,.85)" stroke="rgba(139,26,26,.5)" stroke-width="1.5"/>
+      <ellipse cx="100" cy="80" rx="65" ry="58" fill="rgba(20,8,8,.6)" stroke="rgba(100,20,20,.3)" stroke-width="1"/>
+      <!-- Eye sockets -->
+      <ellipse cx="74" cy="88" rx="22" ry="20" fill="rgba(0,0,0,.95)" stroke="rgba(139,26,26,.4)" stroke-width="1"/>
+      <ellipse cx="126" cy="88" rx="22" ry="20" fill="rgba(0,0,0,.95)" stroke="rgba(139,26,26,.4)" stroke-width="1"/>
+      <!-- Eye glow -->
+      <ellipse cx="74" cy="88" rx="10" ry="9" fill="rgba(139,26,26,.25)"/>
+      <ellipse cx="126" cy="88" rx="10" ry="9" fill="rgba(139,26,26,.25)"/>
+      <ellipse cx="74" cy="88" rx="4" ry="4" fill="rgba(192,57,43,.4)"/>
+      <ellipse cx="126" cy="88" rx="4" ry="4" fill="rgba(192,57,43,.4)"/>
+      <!-- Nasal cavity -->
+      <path d="M93 110 Q100 105 107 110 Q105 122 100 124 Q95 122 93 110Z" fill="rgba(0,0,0,.9)" stroke="rgba(100,20,20,.3)" stroke-width="0.8"/>
+      <!-- Cheekbones -->
+      <path d="M28 100 Q45 115 55 130" fill="none" stroke="rgba(80,20,20,.3)" stroke-width="1.5"/>
+      <path d="M172 100 Q155 115 145 130" fill="none" stroke="rgba(80,20,20,.3)" stroke-width="1.5"/>
+      <!-- Jaw -->
+      <rect x="55" y="148" width="90" height="38" rx="8" fill="rgba(12,4,4,.9)" stroke="rgba(139,26,26,.4)" stroke-width="1.2"/>
+      <!-- Teeth -->
+      <rect x="62" y="152" width="11" height="20" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="76" y="150" width="11" height="24" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="90" y="150" width="11" height="24" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="104" y="150" width="11" height="24" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <rect x="118" y="152" width="11" height="20" rx="3" fill="rgba(180,160,140,.12)" stroke="rgba(100,80,60,.2)" stroke-width="0.8"/>
+      <!-- Crown crack -->
+      <path d="M95 30 Q98 55 100 70 Q102 85 99 95" fill="none" stroke="rgba(139,26,26,.35)" stroke-width="1.2"/>
+      <!-- Lightning at top -->
+      <path d="M90 5 L85 18 L95 18 L88 32" fill="none" stroke="rgba(150,180,220,.3)" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M108 8 L104 20 L112 20 L106 34" fill="none" stroke="rgba(150,180,220,.2)" stroke-width="1" stroke-linecap="round"/>
+      <!-- Smoke at bottom -->
+      <ellipse cx="100" cy="200" rx="55" ry="18" fill="rgba(30,5,5,.2)"/>
+      <ellipse cx="80" cy="210" rx="30" ry="12" fill="rgba(20,5,5,.15)"/>
+      <ellipse cx="120" cy="210" rx="30" ry="12" fill="rgba(20,5,5,.15)"/>
+    </svg>
   </div>
-  <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;min-height:calc(100vh - 45px)">
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:24px;padding:32px 20px">
+    <div id="pv-idle" style="text-align:center">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:28px;color:var(--gold-d)">⚔ Venter på GM…</div>
+      <div style="font-size:16px;color:var(--text-d);margin-top:10px;font-style:italic">Kampen er ikke begyndt endnu.</div>
+    </div>
+  </div>
+  <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;min-height:calc(100vh - 45px);position:relative;z-index:1;padding:32px 20px">
     <div id="pv-round" class="pv-round">— Runde 1 —</div>
     <div id="pv-card" class="pv-card pal-player">
       <div id="pv-whose" class="pv-whose-turn">Det er denne spillers tur</div>
@@ -281,6 +326,31 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
       <div id="pv-order-title" class="pv-order-title">Initiativrækkefølge</div>
       <div id="pv-order-list"></div>
     </div>
+  </div>
+</div>
+
+<!-- DST MODAL -->
+<div id="dst-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:700;align-items:center;justify-content:center">
+  <div style="background:linear-gradient(145deg,#1a0505,#0e0202);border:2px solid #8b1a1a;border-radius:8px;width:min(380px,92vw);padding:28px;text-align:center;position:relative;box-shadow:0 0 60px rgba(139,26,26,.5)">
+    <div style="font-family:'Cinzel Decorative',serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#8b1a1a;margin-bottom:8px">Death Saving Throws</div>
+    <div id="dst-name" style="font-family:'Cinzel Decorative',serif;font-size:22px;color:#d4b896;margin-bottom:20px">—</div>
+    <div style="display:flex;justify-content:space-around;margin-bottom:20px">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#4a9a4a;margin-bottom:8px">Successes</div>
+        <div id="dst-successes"></div>
+      </div>
+      <div style="font-size:28px;color:#8b1a1a;align-self:center">☠</div>
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#c0392b;margin-bottom:8px">Failures</div>
+        <div id="dst-failures"></div>
+      </div>
+    </div>
+    <div id="dst-msg" style="font-size:13px;font-style:italic;color:var(--text-d);min-height:20px;margin-bottom:16px"></div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-blood" onclick="dstRoll(false)" style="flex:1">✕ Failure</button>
+      <button class="btn btn-gold" onclick="dstRoll(true)" style="flex:1">✓ Success</button>
+    </div>
+    <button onclick="closeDST()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text-d);cursor:pointer;font-size:18px">✕</button>
   </div>
 </div>
 
@@ -512,18 +582,33 @@ function renderInitList(){
   else{
     el.innerHTML=combat.combatants.map((c,i)=>{
       const isA=combat.phase==="combat"&&i===combat.currentIndex;
+      const isDead=c.dead||(c.dst?.dead);
       const pct=c.maxHp?Math.round((c.hp/c.maxHp)*100):null;
-      return`<div class="init-item${isA?" active":""}">
-        <div class="init-num">${c.initiative}</div>
+      const dstInfo=c.dst&&!c.dst.stable&&!c.dst.dead?` · <span style="color:#c0392b">☠ DST ${c.dst.successes}✓ ${c.dst.failures}✗</span>`
+        :c.dst?.stable?` · <span style="color:#4a9a4a">✦ Stabil</span>`
+        :c.dst?.dead?` · <span style="color:#8b1a1a">☠ Død</span>`:"";
+      return`<div class="init-item${isA?" active":""}" style="${isDead?"opacity:.35;filter:grayscale(.8)":""}">
+        <div class="init-num">
+          <input type="number" value="${c.initiative}"
+            style="width:36px;background:transparent;border:none;border-bottom:1px solid var(--gold-d);color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:14px;text-align:center;outline:none;padding:0"
+            onchange="changeInitiative('${c.id}',this.value)"
+            onclick="event.stopPropagation()"/>
+        </div>
         <div class="init-info">
-          <div class="init-name">${esc(c.name)}</div>
-          <div class="init-type t-${c.type}">${typeLabel(c.type)}${c.ac?` · AC ${c.ac}`:""}</div>
+          <div class="init-name">${esc(c.name)}${isDead?' <span style="font-size:10px;color:#8b1a1a">☠</span>':""}</div>
+          <div class="init-type t-${c.type}">${typeLabel(c.type)}${c.ac?` · AC ${c.ac}`:""}${dstInfo}</div>
           ${c.maxHp?`<div class="hp-bar"><div class="hp-fill" style="width:${pct}%;background:${hpColor(pct)}"></div></div>
           <div class="hp-text">${c.hp}/${c.maxHp} HP</div>
-          <div class="hp-row">
+          ${!isDead?`<div class="hp-row">
             <input class="hp-input" id="hpd-${c.id}" type="number" placeholder="±"/>
-            <button class="btn btn-blood btn-xs" onclick="applyHp('${c.id}',-1)">Skade</button>
-            <button class="btn btn-gold btn-xs" onclick="applyHp('${c.id}',+1)">Helbred</button>
+            <button class="btn btn-blood btn-xs" onclick="applyHp('${c.id}',-1)">Damage</button>
+            <button class="btn btn-gold btn-xs" onclick="applyHp('${c.id}',+1)">Healing</button>
+            ${c.hp===0&&c.type==="player"?`<button class="btn btn-xs" onclick="openDST('${c.id}')" style="background:rgba(139,26,26,.4);border:1px solid #8b1a1a;color:#ffbaba;font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px">☠ DST</button>`:""}
+          </div>`:`<div class="hp-row">
+            <button class="btn btn-gold btn-xs" onclick="revive('${c.id}')">↺ Genopliv</button>
+          </div>`}`:""}
+          ${c.type!=="player"?`<div style="margin-top:4px">
+            <button class="btn btn-xs btn-ghost" onclick="toggleDead('${c.id}')" style="font-size:8px;padding:2px 6px">${isDead?"↺ Genopliv":"☠ Markér død"}</button>
           </div>`:""}
         </div>
         <button class="init-remove" onclick="removeCombatant('${c.id}')">✕</button>
@@ -554,9 +639,12 @@ function renderPlayer(){
   document.getElementById("pv-idle").style.display=ic?"none":"flex";
   document.getElementById("pv-combat").style.display=ic?"flex":"none";
   const pv=document.getElementById("player-view");
-  if(!ic){pv.className="pal-idle";return;}
+  const skull=document.getElementById("pv-skull");
+  if(!ic){pv.className="pal-idle";skull.style.opacity="0";return;}
   const c=combat.combatants[combat.currentIndex],type=c?.type||"player";
   pv.className=`pal-${type}`;
+  // Show skull on monster/npc turns, hide on player turns
+  skull.style.opacity=type==="player"?"0":"0.18";
   const pal=type==="player"?{a:"var(--pl-accent-l)",d:"var(--pl-dim)"}
     :type==="monster"?{a:"var(--mo-accent-l)",d:"var(--mo-dim)"}
     :{a:"var(--np-accent-l)",d:"var(--np-dim)"};
@@ -574,9 +662,10 @@ function renderPlayer(){
   else sub.textContent=typeLabel(type);
   document.getElementById("pv-order-list").innerHTML=(combat.combatants||[]).map((x,i)=>{
     const cur=i===combat.currentIndex;
+    const dstBadge=x.dst&&!x.dst.stable&&!x.dst.dead?` <span style="color:#c0392b;font-size:10px">☠ DST</span>`:x.dst?.stable?` <span style="color:#4a9a4a;font-size:10px">✦ Stabil</span>`:x.dst?.dead?` <span style="color:#8b1a1a;font-size:10px">☠ Død</span>`:"";
     return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}">
       <div class="pv-order-num" style="color:${pal.d}">${x.initiative}</div>
-      <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}</div>
+      <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${dstBadge}</div>
       ${cur?`<span style="color:${pal.a};font-size:10px">◀</span>`:""}
     </div>`;
   }).join("");
@@ -701,6 +790,53 @@ function addManual(){
   saveCombat();render();
 }
 
+function changeInitiative(id, val){
+  const init=parseInt(val);
+  if(isNaN(init))return;
+  combat.combatants=combat.combatants.map(c=>c.id===id?{...c,initiative:init}:c);
+  // Re-sort and fix currentIndex
+  const activeId=combat.combatants[combat.currentIndex]?.id;
+  combat.combatants.sort((a,b)=>b.initiative-a.initiative);
+  if(activeId)combat.currentIndex=Math.max(0,combat.combatants.findIndex(c=>c.id===activeId));
+  saveCombat();render();
+}
+
+function toggleDead(id){
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id)return c;
+    const nowDead=!c.dead;
+    combat.log=[nowDead
+      ?`☠ <strong>${esc(c.name)}</strong> er død og springer over i rækkefølgen.`
+      :`↺ <strong>${esc(c.name)}</strong> er genoplivet!`,
+      ...(combat.log||[]).slice(0,49)];
+    return{...c,dead:nowDead,hp:nowDead?0:c.hp};
+  });
+  // If current combatant just died, advance
+  const cur=combat.combatants[combat.currentIndex];
+  if(cur?.dead)advanceToNext();
+  saveCombat();render();
+}
+
+function revive(id){
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id)return c;
+    combat.log=[`↺ <strong>${esc(c.name)}</strong> er genoplivet!`,...(combat.log||[]).slice(0,49)];
+    return{...c,dead:false,dst:null,hp:1};
+  });
+  saveCombat();render();
+}
+
+function advanceToNext(){
+  const alive=combat.combatants.filter(c=>!c.dead&&!c.dst?.dead);
+  if(!alive.length)return;
+  let idx=(combat.currentIndex+1)%combat.combatants.length;
+  let safety=0;
+  while((combat.combatants[idx]?.dead||combat.combatants[idx]?.dst?.dead)&&safety<combat.combatants.length){
+    idx=(idx+1)%combat.combatants.length;safety++;
+  }
+  combat.currentIndex=idx;
+}
+
 function removeCombatant(id){
   combat.combatants=combat.combatants.filter(c=>c.id!==id);
   combat.currentIndex=Math.min(combat.currentIndex,Math.max(0,combat.combatants.length-1));
@@ -710,10 +846,77 @@ function removeCombatant(id){
 function applyHp(id,sign){
   const inp=document.getElementById(`hpd-${id}`);
   const delta=Math.abs(parseInt(inp?.value)||0)*sign;if(!delta)return;
-  combat.combatants=combat.combatants.map(c=>{if(c.id!==id)return c;return{...c,hp:Math.max(0,Math.min(c.maxHp||9999,(c.hp||0)+delta))};});
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id)return c;
+    const newHp=Math.max(0,Math.min(c.maxHp||9999,(c.hp||0)+delta));
+    // Trigger DST if player drops to 0
+    let dst=c.dst;
+    if(newHp===0&&c.type==="player"&&!dst){
+      dst={successes:0,failures:0,stable:false,dead:false};
+    }
+    // Healing clears DST and revives dead
+    if(delta>0){dst=null;return{...c,hp:newHp,dst,dead:false};}
+    return{...c,hp:newHp,dst};
+  });
   const c=combat.combatants.find(x=>x.id===id);
-  combat.log=[delta>0?`💚 <strong>${esc(c.name)}</strong> helbredes ${delta} → ${c.hp} HP`:`💔 <strong>${esc(c.name)}</strong> tager ${Math.abs(delta)} skade → ${c.hp} HP`,...(combat.log||[]).slice(0,49)];
-  if(inp)inp.value="";saveCombat();render();
+  combat.log=[delta>0
+    ?`💚 <strong>${esc(c.name)}</strong> healed ${delta} → ${c.hp} HP`
+    :`💔 <strong>${esc(c.name)}</strong> took ${Math.abs(delta)} damage → ${c.hp} HP`,
+    ...(combat.log||[]).slice(0,49)];
+  if(inp)inp.value="";
+  saveCombat();render();
+  // Show DST modal if player just hit 0
+  if(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead){
+    openDST(id);
+  }
+}
+
+// ── Death Saving Throws ───────────────────────────────────────────────────
+function openDST(id){
+  const c=combat.combatants.find(x=>x.id===id);if(!c||!c.dst)return;
+  document.getElementById("dst-name").textContent=c.name;
+  renderDSTpips(c.dst);
+  document.getElementById("dst-overlay").style.display="flex";
+  document.getElementById("dst-overlay").dataset.id=id;
+}
+
+function closeDST(){document.getElementById("dst-overlay").style.display="none";}
+
+function renderDSTpips(dst){
+  const pip=(filled,color)=>`<span style="display:inline-block;width:18px;height:18px;border-radius:50%;border:2px solid ${color};background:${filled?color:"transparent"};margin:0 3px;transition:all .2s"></span>`;
+  document.getElementById("dst-successes").innerHTML=
+    [0,1,2].map(i=>pip(i<dst.successes,"#4a9a4a")).join("");
+  document.getElementById("dst-failures").innerHTML=
+    [0,1,2].map(i=>pip(i<dst.failures,"#c0392b")).join("");
+  const msg=document.getElementById("dst-msg");
+  if(dst.stable){msg.textContent="✦ Stabil — karakteren er i sikkerhed.";msg.style.color="#4a9a4a";}
+  else if(dst.dead){msg.textContent="☠ Karakteren er død.";msg.style.color="#c0392b";}
+  else{msg.textContent="";msg.style.color="var(--text-d)";}
+}
+
+function dstRoll(success){
+  const id=document.getElementById("dst-overlay").dataset.id;
+  combat.combatants=combat.combatants.map(c=>{
+    if(c.id!==id||!c.dst)return c;
+    let{successes,failures,stable,dead}=c.dst;
+    if(stable||dead)return c;
+    if(success){successes=Math.min(3,successes+1);}
+    else{failures=Math.min(3,failures+1);}
+    if(successes>=3)stable=true;
+    if(failures>=3)dead=true;
+    return{...c,dst:{successes,failures,stable,dead}};
+  });
+  const c=combat.combatants.find(x=>x.id===id);
+  if(c?.dst){
+    const msg=c.dst.stable?`✦ <strong>${esc(c.name)}</strong> er stabil!`
+      :c.dst.dead?`☠ <strong>${esc(c.name)}</strong> er død!`
+      :success?`🎲 <strong>${esc(c.name)}</strong> DST success (${c.dst.successes}/3)`
+      :`🎲 <strong>${esc(c.name)}</strong> DST failure (${c.dst.failures}/3)`;
+    combat.log=[msg,...(combat.log||[]).slice(0,49)];
+    renderDSTpips(c.dst);
+    if(c.dst.stable||c.dst.dead){setTimeout(closeDST,1500);}
+  }
+  saveCombat();render();
 }
 
 function startCombat(){
@@ -732,23 +935,39 @@ function endCombat(){
 
 function nextTurn(){
   combat.combatants=combat.combatants.map((c,i)=>i!==combat.currentIndex?c:{...c,actions:c.actions.map(a=>({...a,used:false}))});
-  combat.currentIndex=(combat.currentIndex+1)%combat.combatants.length;
-  if(combat.currentIndex===0){
+  let nextIdx=(combat.currentIndex+1)%combat.combatants.length;
+  let safety=0;
+  // Skip dead combatants
+  while((combat.combatants[nextIdx]?.dead||combat.combatants[nextIdx]?.dst?.dead)&&safety<combat.combatants.length){
+    nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
+  }
+  const prevIdx=combat.currentIndex;
+  combat.currentIndex=nextIdx;
+  // New round if we wrapped past 0
+  if(nextIdx<=prevIdx&&combat.combatants.length>1){
     combat.round++;
     combat.spellTimers=(combat.spellTimers||[]).map(t=>({...t,roundsLeft:t.roundsLeft-1}));
     combat.spellTimers.filter(t=>t.roundsLeft<=0).forEach(t=>showToast(t.name,t.caster));
     combat.spellTimers=combat.spellTimers.filter(t=>t.roundsLeft>0);
   }
   const next=combat.combatants[combat.currentIndex];
-  combat.log=[combat.currentIndex===0?`🔔 <strong>Runde ${combat.round}</strong> begynder — <strong>${esc(next.name)}</strong> er aktiv.`:`➡ <strong>${esc(next.name)}</strong>s tur.`,...(combat.log||[]).slice(0,49)];
+  combat.log=[nextIdx<=prevIdx&&combat.combatants.length>1
+    ?`🔔 <strong>Runde ${combat.round}</strong> begynder — <strong>${esc(next.name)}</strong> er aktiv.`
+    :`➡ <strong>${esc(next.name)}</strong>s tur.`,...(combat.log||[]).slice(0,49)];
   saveCombat();render();
 }
 
 function skipTurn(){
   const sk=combat.combatants[combat.currentIndex];
   combat.log=[`⏭ <strong>${esc(sk.name)}</strong> springer over.`,...(combat.log||[]).slice(0,49)];
-  combat.currentIndex=(combat.currentIndex+1)%combat.combatants.length;
-  if(combat.currentIndex===0)combat.round++;
+  let nextIdx=(combat.currentIndex+1)%combat.combatants.length;
+  let safety=0;
+  while((combat.combatants[nextIdx]?.dead||combat.combatants[nextIdx]?.dst?.dead)&&safety<combat.combatants.length){
+    nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
+  }
+  const prevIdx=combat.currentIndex;
+  combat.currentIndex=nextIdx;
+  if(nextIdx<=prevIdx&&combat.combatants.length>1)combat.round++;
   saveCombat();render();
 }
 
