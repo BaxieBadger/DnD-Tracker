@@ -609,11 +609,13 @@ function renderInitList(){
     el.innerHTML=combat.combatants.map((c,i)=>{
       const isA=combat.phase==="combat"&&i===combat.currentIndex;
       const isDead=c.dead||(c.dst?.dead);
+      const stable=c.dst?.stable;
       const pct=c.maxHp?Math.round((c.hp/c.maxHp)*100):null;
       const dstInfo=c.dst&&!c.dst.stable&&!c.dst.dead?` · <span style="color:#c0392b">☠ DST ${c.dst.successes}✓ ${c.dst.failures}✗</span>`
-        :c.dst?.stable?` · <span style="color:#4a9a4a">✦ Stabil</span>`
+        :stable?` · <span style="color:#7ab8d4">☽ Stabil / bevidstløs</span>`
         :c.dst?.dead?` · <span style="color:#8b1a1a">☠ Død</span>`:"";
-      return`<div class="init-item${isA?" active":""}" style="${isDead?"opacity:.35;filter:grayscale(.8)":""}">
+      const greyOut=isDead||stable;
+      return`<div class="init-item${isA?" active":""}" style="${greyOut?"opacity:.35;filter:grayscale(.8)":""}">
         <div class="init-num">
           <input type="number" value="${c.initiative}"
             style="width:36px;background:transparent;border:none;border-bottom:1px solid var(--gold-d);color:var(--gold);font-family:'Cinzel Decorative',serif;font-size:14px;text-align:center;outline:none;padding:0"
@@ -671,28 +673,47 @@ function renderPlayer(){
   pv.className=`pal-${type}`;
   skull.style.opacity=type==="player"?"0":"0.18";
 
-  // Show DST on player view if active combatant is dying, hide otherwise
   const dying=c&&isDying(c);
+  const stable=c&&isStable(c);
+
+  // DST overlay: show for dying (no buttons), hide for others
   if(dying){
-    openDST(c.id, false); // no buttons on player side
+    openDST(c.id, false);
   } else {
     closeDST();
   }
+
   const pal=type==="player"?{a:"var(--pl-accent-l)",d:"var(--pl-dim)"}
     :type==="monster"?{a:"var(--mo-accent-l)",d:"var(--mo-dim)"}
     :{a:"var(--np-accent-l)",d:"var(--np-dim)"};
   const s=(id,prop,val)=>{const el=document.getElementById(id);if(el)el.style[prop]=val;};
   const t=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   s("pv-round","color",pal.d);t("pv-round",`— Runde ${combat.round} —`);
-  s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 40px ${pal.a}88`);t("pv-name",c?c.name:"—");
   s("pv-timer","color",pal.d);s("pv-timer-label","color",pal.d);
   s("pv-order-title","color",pal.d);s("pv-whose","color",pal.d);
   t("pv-timer",fmt(roundSeconds()));
   document.getElementById("pv-card").className=`pv-card pal-${type}`;
-  const sub=document.getElementById("pv-sub");
-  sub.style.color=pal.d;
-  if(c?.charId){const ch=characters.find(x=>x.id===c.charId);sub.textContent=ch?.class?`${ch.class}${ch.level?" · Level "+ch.level:""}`:typeLabel(type);}
-  else sub.textContent=typeLabel(type);
+
+  // Stable: show nap message instead of normal name/class
+  if(stable){
+    s("pv-name","color","var(--pl-dim)");
+    s("pv-name","textShadow","none");
+    t("pv-name",c.name);
+    const sub=document.getElementById("pv-sub");
+    sub.style.color="var(--pl-dim)";
+    sub.style.fontStyle="italic";
+    sub.textContent=`${c.name} tager sig lige en lur! Tjek igen senere. ☽`;
+    s("pv-whose","color","var(--pl-dim)");
+    t("pv-whose", "");
+  } else {
+    s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 40px ${pal.a}88`);t("pv-name",c?c.name:"—");
+    const sub=document.getElementById("pv-sub");
+    sub.style.color=pal.d;
+    sub.style.fontStyle="italic";
+    if(c?.charId){const ch=characters.find(x=>x.id===c.charId);sub.textContent=ch?.class?`${ch.class}${ch.level?" · Level "+ch.level:""}`:typeLabel(type);}
+    else sub.textContent=typeLabel(type);
+    s("pv-whose","color",pal.d);
+  }
   document.getElementById("pv-order-list").innerHTML=(combat.combatants||[]).map((x,i)=>{
     const cur=i===combat.currentIndex;
     const dead=x.dead||x.dst?.dead;
@@ -887,7 +908,8 @@ function removeCombatant(id){
 }
 
 function isDying(c){return c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead;}
-function isOutOfFight(c){return c.dead||c.dst?.dead||(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead);}
+function isStable(c){return c.hp===0&&c.type==="player"&&c.dst?.stable;}
+function isOutOfFight(c){return c.dead||c.dst?.dead||isStable(c)||isDying(c);}
 
 function applyHp(id,sign){
   const inp=document.getElementById(`hpd-${id}`);
@@ -895,9 +917,9 @@ function applyHp(id,sign){
   combat.combatants=combat.combatants.map(c=>{
     if(c.id!==id)return c;
     const newHp=Math.max(0,Math.min(c.maxHp||9999,(c.hp||0)+delta));
-    // Healing clears DST and revives dead
+    // Healing clears DST and revives
     if(delta>0){return{...c,hp:newHp,dst:null,dead:false};}
-    // Damage: trigger DST if player hits 0
+    // Damage: mark DST state if player hits 0, but do NOT open modal yet
     let dst=c.dst;
     if(newHp===0&&c.type==="player"&&!dst){
       dst={successes:0,failures:0,stable:false,dead:false};
@@ -905,23 +927,16 @@ function applyHp(id,sign){
     return{...c,hp:newHp,dst};
   });
   const c=combat.combatants.find(x=>x.id===id);
-  combat.log=[delta>0
+  const logMsg=delta>0
     ?`💚 <strong>${esc(c.name)}</strong> healed ${delta} → ${c.hp} HP`
-    :`💔 <strong>${esc(c.name)}</strong> took ${Math.abs(delta)} damage → ${c.hp} HP`,
-    ...(combat.log||[]).slice(0,49)];
-  if(inp)inp.value="";
-  // If current active player just hit 0, open DST and advance turn
+    :`💔 <strong>${esc(c.name)}</strong> took ${Math.abs(delta)} damage → ${c.hp} HP`;
+  combat.log=[logMsg,...(combat.log||[]).slice(0,49)];
+  // Log that player is down, but DST screen only shows on their turn
   if(c.hp===0&&c.type==="player"&&c.dst&&!c.dst.stable&&!c.dst.dead){
-    combat.log=[`☠ <strong>${esc(c.name)}</strong> er nede! Death Saving Throws!`,...combat.log.slice(0,49)];
-    saveCombat();render();
-    openDST(id);
-    // Auto-advance past dying player
-    if(combat.currentIndex===combat.combatants.findIndex(x=>x.id===id)){
-      setTimeout(()=>{advanceToNext();saveCombat();render();},300);
-    }
-  } else {
-    saveCombat();render();
+    combat.log=[`☠ <strong>${esc(c.name)}</strong> er nede! DST ruller på deres tur.`,...combat.log.slice(0,49)];
   }
+  if(inp)inp.value="";
+  saveCombat();render();
 }
 
 // ── Death Saving Throws ───────────────────────────────────────────────────
@@ -997,6 +1012,9 @@ function advanceToNext(){
   combat.currentIndex=idx;
 }
 
+// Dying players get their DST turn — de må IKKE skippes
+function isOutOfFight(c){return c.dead||c.dst?.dead;}
+
 function nextTurn(){
   combat.combatants=combat.combatants.map((c,i)=>i!==combat.currentIndex?c:{...c,actions:c.actions.map(a=>({...a,used:false}))});
   const prevIdx=combat.currentIndex;
@@ -1006,7 +1024,6 @@ function nextTurn(){
     nextIdx=(nextIdx+1)%combat.combatants.length;safety++;
   }
   combat.currentIndex=nextIdx;
-  // New round detection: wrapped around
   if(nextIdx<=prevIdx){
     combat.round++;
     combat.spellTimers=(combat.spellTimers||[]).map(t=>({...t,roundsLeft:t.roundsLeft-1}));
@@ -1018,6 +1035,12 @@ function nextTurn(){
     ?`🔔 <strong>Runde ${combat.round}</strong> begynder — <strong>${esc(next.name)}</strong> er aktiv.`
     :`➡ <strong>${esc(next.name)}</strong>s tur.`,...(combat.log||[]).slice(0,49)];
   saveCombat();render();
+  // Åbn DST for GM hvis næste er en dying spiller
+  if(isDying(next)){
+    openDST(next.id, true);
+  } else {
+    closeDST();
+  }
 }
 
 function skipTurn(){
