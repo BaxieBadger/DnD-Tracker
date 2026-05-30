@@ -147,6 +147,9 @@ html{font-size:18px}
 #player-view.pal-monster{background:linear-gradient(160deg,var(--mo-bg1),var(--mo-bg2))}
 #player-view.pal-npc{background:linear-gradient(160deg,var(--np-bg1),var(--np-bg2))}
 #player-view.pal-idle{background:var(--ink)}
+#player-view.pal-lobby{background:#080a0c}
+#pv-city-bg{position:fixed;inset:0;background-image:url('city.png');background-size:cover;background-position:center top;z-index:0;opacity:0;transition:opacity 1.5s;pointer-events:none}
+#pv-city-overlay{position:fixed;inset:0;background:rgba(4,6,10,.72);z-index:1;opacity:0;transition:opacity 1.5s;pointer-events:none}
 .pv-round{font-family:'Cinzel',serif;font-size:clamp(12px,2vw,18px);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
 .pv-card{width:100%;max-width:600px;border:2px solid;border-radius:8px;padding:32px 28px;text-align:center;position:relative;transition:all .5s}
 .pv-card::after{content:'';position:absolute;inset:6px;border:1px solid rgba(255,255,255,.08);border-radius:4px;pointer-events:none}
@@ -223,6 +226,7 @@ html{font-size:18px}
     <div class="section-divider">Rækkefølge</div>
     <div id="init-list" style="margin-top:6px"><div class="empty-msg">Ingen kombattanter</div></div>
     <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+      <button id="btn-lobby" class="btn btn-ghost" onclick="openInitiative()" style="width:100%">🏰 Åbn Initiativ-skærm</button>
       <button id="btn-start" class="btn btn-gold" onclick="startCombat()" disabled style="width:100%">⚔ Start Kamp</button>
       <button id="btn-end" class="btn btn-blood" onclick="endCombat()" style="display:none;width:100%">✕ Afslut Kamp</button>
     </div>
@@ -298,6 +302,9 @@ html{font-size:18px}
 
 <div id="player-view" class="pal-idle">
   <button id="pv-fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
+  <!-- City background layers -->
+  <div id="pv-city-bg"></div>
+  <div id="pv-city-overlay"></div>
   <!-- Skull background -->
   <div id="pv-skull" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.5s">
     <svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" style="width:min(70vw,400px);height:auto;filter:drop-shadow(0 0 40px rgba(139,26,26,.6))">
@@ -342,9 +349,16 @@ html{font-size:18px}
     </svg>
   </div>
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:20px;padding:20px">
-    <div id="pv-idle" style="text-align:center">
+    <!-- Lobby screen (city background) -->
+    <div id="pv-lobby" style="text-align:center;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px)">
+      <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(28px,6vw,52px);color:#d4c89a;text-shadow:0 0 40px rgba(180,160,100,.4),0 2px 8px rgba(0,0,0,.8)">Alt ånder fred og ro</div>
+      <div style="font-size:clamp(16px,2.5vw,24px);color:rgba(180,160,120,.6);margin-top:16px;font-style:italic;text-shadow:0 2px 8px rgba(0,0,0,.9)">Lidt endnu…</div>
+    </div>
+    <!-- Initiative screen -->
+    <div id="pv-initiative" style="text-align:center;position:relative;z-index:2;display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px)">
       <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(24px,5vw,36px);color:var(--gold-d)">Rul for initiativ…</div>
       <div style="font-size:clamp(16px,2.5vw,22px);color:var(--text-d);margin-top:10px;font-style:italic">Døden står for døren!</div>
+    </div>
     </div>
     <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;gap:16px;width:100%">
       <div id="pv-round" class="pv-round">— Runde 1 —</div>
@@ -665,8 +679,12 @@ function renderInitList(){
     }).join("");
   }
   const ic=combat.phase==="combat";
-  bs.style.display=ic?"none":"block";be.style.display=ic?"block":"none";
+  const hasInit=combat.phase==="initiative"||ic;
+  bs.style.display=ic?"none":"block";
+  be.style.display=ic?"block":"none";
   bs.disabled=!combat.combatants?.length;
+  const btnLobby=document.getElementById("btn-lobby");
+  if(btnLobby)btnLobby.style.display=ic?"none":"block";
 }
 
 function renderGM(){
@@ -683,26 +701,53 @@ function renderGM(){
   document.getElementById("log-box").innerHTML=(combat.log||[]).map(e=>`<div class="log-entry">${e}</div>`).join("");
 }
 
+function openInitiative(){
+  combat.phase="initiative";
+  saveCombat();render();
+}
+
 function renderPlayer(){
-  const ic=combat.phase==="combat";
-  document.getElementById("pv-idle").style.display=ic?"none":"block";
-  document.getElementById("pv-combat").style.display=ic?"flex":"none";
+  const phase=combat.phase;
   const pv=document.getElementById("player-view");
   const skull=document.getElementById("pv-skull");
-  if(!ic){pv.className="pal-idle";skull.style.opacity="0";return;}
+  const cityBg=document.getElementById("pv-city-bg");
+  const cityOv=document.getElementById("pv-city-overlay");
+  const lobbyEl=document.getElementById("pv-lobby");
+  const initEl=document.getElementById("pv-initiative");
+  const combatEl=document.getElementById("pv-combat");
+
+  // Reset all screens
+  lobbyEl.style.display="none";
+  initEl.style.display="none";
+  combatEl.style.display="none";
+  skull.style.opacity="0";
+
+  if(phase==="idle"){
+    pv.className="pal-lobby";
+    cityBg.style.opacity="1";
+    cityOv.style.opacity="1";
+    lobbyEl.style.display="flex";
+    return;
+  }
+  if(phase==="initiative"){
+    pv.className="pal-idle";
+    cityBg.style.opacity="0";
+    cityOv.style.opacity="0";
+    initEl.style.display="flex";
+    return;
+  }
+
+  // Combat phase
+  cityBg.style.opacity="0";
+  cityOv.style.opacity="0";
+  combatEl.style.display="flex";
   const c=combat.combatants[combat.currentIndex],type=c?.type||"player";
   pv.className=`pal-${type}`;
   skull.style.opacity=type==="player"?"0":"0.18";
 
   const dying=c&&isDying(c);
   const stable=c&&isStable(c);
-
-  // DST overlay: show for dying (no buttons), hide for others
-  if(dying){
-    openDST(c.id, false);
-  } else {
-    closeDST();
-  }
+  if(dying){openDST(c.id,false);}else{closeDST();}
 
   const pal=type==="player"?{a:"var(--pl-accent-l)",d:"var(--pl-dim)"}
     :type==="monster"?{a:"var(--mo-accent-l)",d:"var(--mo-dim)"}
@@ -714,23 +759,17 @@ function renderPlayer(){
   s("pv-order-title","color",pal.d);s("pv-whose","color",pal.d);
   t("pv-timer",fmt(roundSeconds()));
   document.getElementById("pv-card").className=`pv-card pal-${type}`;
-
-  // Stable: show nap message instead of normal name/class
   if(stable){
-    s("pv-name","color","var(--pl-dim)");
-    s("pv-name","textShadow","none");
+    s("pv-name","color","var(--pl-dim)");s("pv-name","textShadow","none");
     t("pv-name",c.name);
     const sub=document.getElementById("pv-sub");
-    sub.style.color="var(--pl-dim)";
-    sub.style.fontStyle="italic";
+    sub.style.color="var(--pl-dim)";sub.style.fontStyle="italic";
     sub.textContent=`${c.name} tager sig lige en lur! Tjek igen senere. ☽`;
-    s("pv-whose","color","var(--pl-dim)");
-    t("pv-whose", "");
+    s("pv-whose","color","var(--pl-dim)");t("pv-whose","");
   } else {
     s("pv-name","color",pal.a);s("pv-name","textShadow",`0 0 40px ${pal.a}88`);t("pv-name",c?c.name:"—");
     const sub=document.getElementById("pv-sub");
-    sub.style.color=pal.d;
-    sub.style.fontStyle="italic";
+    sub.style.color=pal.d;sub.style.fontStyle="italic";
     if(c?.charId){const ch=characters.find(x=>x.id===c.charId);sub.textContent=ch?.class?`${ch.class}${ch.level?" · Level "+ch.level:""}`:typeLabel(type);}
     else sub.textContent=typeLabel(type);
     s("pv-whose","color",pal.d);
@@ -738,11 +777,10 @@ function renderPlayer(){
   document.getElementById("pv-order-list").innerHTML=(combat.combatants||[]).map((x,i)=>{
     const cur=i===combat.currentIndex;
     const dead=x.dead||x.dst?.dead;
-    const dying=x.hp===0&&x.type==="player"&&x.dst&&!x.dst.stable&&!x.dst.dead;
-    const badge=dead?` <span style="color:#8b1a1a;font-size:12px">☠</span>`:dying?` <span style="color:#c0392b;font-size:12px">☠</span>`:"";
-    // Spillere: vis initiativrul. Monstre/NPC: vis kun position (1., 2., 3.)
+    const dying2=x.hp===0&&x.type==="player"&&x.dst&&!x.dst.stable&&!x.dst.dead;
+    const badge=dead?` <span style="color:#8b1a1a;font-size:12px">☠</span>`:dying2?` <span style="color:#c0392b;font-size:12px">☠</span>`:"";
     const numLabel=x.type==="player"?x.initiative:`${i+1}.`;
-    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}${dead||dying?";opacity:.3":""}">
+    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}${dead||dying2?";opacity:.3":""}">
       <div class="pv-order-num" style="color:${pal.d}">${numLabel}</div>
       <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${badge}</div>
       ${cur?`<span style="color:${pal.a};font-size:14px">◀</span>`:""}
