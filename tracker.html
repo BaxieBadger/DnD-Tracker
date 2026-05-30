@@ -142,7 +142,7 @@ body{background:radial-gradient(ellipse at 20% 50%,rgba(139,26,26,.08) 0%,transp
 #player-view.pal-idle{background:var(--ink)}
 .pv-round{font-family:'Cinzel',serif;font-size:10px;letter-spacing:4px;text-transform:uppercase}
 html{font-size:18px}
-#player-view{flex-direction:column;align-items:center;justify-content:center;padding:0;gap:0;transition:background 1s;min-height:calc(100vh - 45px)}
+#player-view{flex-direction:column;align-items:center;justify-content:center;padding:0;gap:0;transition:background 1s;min-height:100vh;position:relative}
 #player-view.pal-player{background:linear-gradient(160deg,var(--pl-bg1),var(--pl-bg2))}
 #player-view.pal-monster{background:linear-gradient(160deg,var(--mo-bg1),var(--mo-bg2))}
 #player-view.pal-npc{background:linear-gradient(160deg,var(--np-bg1),var(--np-bg2))}
@@ -301,6 +301,10 @@ html{font-size:18px}
 </div>
 
 <div id="player-view" class="pal-idle">
+  <!-- Top controls -->
+  <div style="position:fixed;top:12px;left:12px;z-index:500;display:flex;gap:8px">
+    <button onclick="setView('gm')" style="background:rgba(0,0,0,.6);border:1px solid var(--gold-d);color:var(--gold-d);font-family:'Cinzel',serif;font-size:11px;letter-spacing:2px;padding:6px 14px;border-radius:3px;cursor:pointer;text-transform:uppercase">⚔ GM</button>
+  </div>
   <button id="pv-fullscreen-btn" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
   <!-- City background layers -->
   <div id="pv-city-bg"></div>
@@ -350,17 +354,17 @@ html{font-size:18px}
   </div>
   <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;min-height:calc(100vh - 45px);justify-content:center;gap:20px;padding:20px">
     <!-- Lobby screen (city background) -->
-    <div id="pv-lobby" style="text-align:center;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px)">
+    <div id="pv-lobby" style="text-align:center;position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh">
       <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(28px,6vw,52px);color:#d4c89a;text-shadow:0 0 40px rgba(180,160,100,.4),0 2px 8px rgba(0,0,0,.8)">Alt ånder fred og ro</div>
       <div style="font-size:clamp(16px,2.5vw,24px);color:rgba(180,160,120,.6);margin-top:16px;font-style:italic;text-shadow:0 2px 8px rgba(0,0,0,.9)">Lidt endnu…</div>
     </div>
     <!-- Initiative screen -->
-    <div id="pv-initiative" style="text-align:center;position:relative;z-index:2;display:none;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 52px)">
+    <div id="pv-initiative" style="text-align:center;position:relative;z-index:2;display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh">
       <div style="font-family:'Cinzel Decorative',serif;font-size:clamp(24px,5vw,36px);color:var(--gold-d)">Rul for initiativ…</div>
       <div style="font-size:clamp(16px,2.5vw,22px);color:var(--text-d);margin-top:10px;font-style:italic">Døden står for døren!</div>
     </div>
     </div>
-    <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;gap:16px;width:100%">
+    <div id="pv-combat" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;width:100%;min-height:100vh;position:relative;z-index:2;padding:20px">
       <div id="pv-round" class="pv-round">— Runde 1 —</div>
       <div id="pv-card" class="pv-card pal-player">
         <div id="pv-whose" class="pv-whose-turn">Det er denne spillers tur</div>
@@ -372,7 +376,6 @@ html{font-size:18px}
         <div id="pv-timer-label" class="pv-timer-label">Kampvarighed</div>
       </div>
       <div class="pv-order">
-        <div id="pv-order-title" class="pv-order-title">Initiativrækkefølge</div>
         <div id="pv-order-list"></div>
       </div>
     </div>
@@ -628,6 +631,7 @@ function setView(v){
   currentView=v;
   document.getElementById("gm-view").style.display=v==="gm"?"grid":"none";
   document.getElementById("player-view").style.display=v==="player"?"flex":"none";
+  document.getElementById("topbar").style.display=v==="gm"?"flex":"none";
   document.querySelectorAll(".view-btn").forEach((b,i)=>b.classList.toggle("active",(i===0&&v==="gm")||(i===1&&v==="player")));
   updateFullscreenBtn();
   render();
@@ -756,7 +760,7 @@ function renderPlayer(){
   const t=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   s("pv-round","color",pal.d);t("pv-round",`— Runde ${combat.round} —`);
   s("pv-timer","color",pal.d);s("pv-timer-label","color",pal.d);
-  s("pv-order-title","color",pal.d);s("pv-whose","color",pal.d);
+  s("pv-whose","color",pal.d);
   t("pv-timer",fmt(roundSeconds()));
   document.getElementById("pv-card").className=`pv-card pal-${type}`;
   if(stable){
@@ -774,18 +778,21 @@ function renderPlayer(){
     else sub.textContent=typeLabel(type);
     s("pv-whose","color",pal.d);
   }
-  document.getElementById("pv-order-list").innerHTML=(combat.combatants||[]).map((x,i)=>{
-    const cur=i===combat.currentIndex;
-    const dead=x.dead||x.dst?.dead;
-    const dying2=x.hp===0&&x.type==="player"&&x.dst&&!x.dst.stable&&!x.dst.dead;
-    const badge=dead?` <span style="color:#8b1a1a;font-size:12px">☠</span>`:dying2?` <span style="color:#c0392b;font-size:12px">☠</span>`:"";
-    const numLabel=x.type==="player"?x.initiative:`${i+1}.`;
-    return`<div class="pv-order-item${cur?" current":""}" style="${cur?`background:rgba(0,0,0,.4);border-color:${pal.a}`:`background:rgba(0,0,0,.2)`}${dead||dying2?";opacity:.3":""}">
-      <div class="pv-order-num" style="color:${pal.d}">${numLabel}</div>
-      <div class="pv-order-name" style="color:${cur?pal.a:pal.d}">${esc(x.name)}${badge}</div>
-      ${cur?`<span style="color:${pal.a};font-size:14px">◀</span>`:""}
-    </div>`;
-  }).join("");
+  // Find næste aktive kombattant
+  const nextUp=(()=>{
+    let idx=(combat.currentIndex+1)%combat.combatants.length;
+    let safety=0;
+    while(isOutOfFight(combat.combatants[idx])&&safety<combat.combatants.length){
+      idx=(idx+1)%combat.combatants.length;safety++;
+    }
+    return combat.combatants[idx]?.name||"";
+  })();
+  const nextEl=document.getElementById("pv-order-list");
+  if(nextEl&&nextUp){
+    nextEl.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:clamp(13px,2vw,18px);color:${pal.d};font-style:italic;text-align:center;opacity:.7">${esc(nextUp)} er næst i rækken</div>`;
+  } else if(nextEl){
+    nextEl.innerHTML="";
+  }
 }
 
 function renderBuckets(cb,isGM){
@@ -1352,7 +1359,7 @@ function toggleFullscreen(){
 
 document.addEventListener("fullscreenchange",()=>{
   const btn=document.getElementById("pv-fullscreen-btn");
-  if(btn) btn.textContent=document.fullscreenElement?"✕ Exit":"⛶ Fullscreen";
+  if(btn) btn.textContent=document.fullscreenElement?"⛶":"⛶";
 });
 
 // Re-acquire wake lock if page becomes visible again
